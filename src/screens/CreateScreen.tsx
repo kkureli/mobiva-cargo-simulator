@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -9,46 +9,10 @@ import {
 } from 'react-native';
 import Chip from '../ui/components/Chip';
 import { CATEGORIES, WEIGHT_BUCKETS, STATUSES } from '../domain/constants';
-import { useDatasetStore } from '../state/store';
+import { useCreateForm } from '../hooks/useCreateForm';
 
 export default function CreateScreen() {
-  const generate = useDatasetStore(s => s.generate);
-  const clean = useDatasetStore(s => s.clean);
-  const reset = useDatasetStore(s => s.reset);
-  const genStats = useDatasetStore(s => s.genStats);
-  const cleanStats = useDatasetStore(s => s.cleanStats);
-  const busy = useDatasetStore(s => s.isGenerating || s.isCleaning);
-  const error = useDatasetStore(s => s.error);
-
-  const [selCats, setSelCats] = useState<string[]>([]);
-  const [selBuckets, setSelBuckets] = useState<string[]>([]);
-  const [selStatuses, setSelStatuses] = useState<string[]>([]);
-  const [priceMin, setPriceMin] = useState<string>('-100');
-  const [priceMax, setPriceMax] = useState<string>('1000');
-  const [count, setCount] = useState<string>('1000');
-
-  const canCreate = useMemo(() => {
-    const min = Number(priceMin);
-    const max = Number(priceMax);
-    const c = Number(count);
-    return (
-      Number.isFinite(min) &&
-      Number.isFinite(max) &&
-      min < max &&
-      Number.isFinite(c) &&
-      c >= 1 &&
-      c <= 10000
-    );
-  }, [priceMin, priceMax, count]);
-
-  const onToggle = (
-    val: string,
-    list: string[],
-    setter: (s: string[]) => void,
-  ) => {
-    if (list.includes(val)) setter(list.filter(x => x !== val));
-    else setter([...list, val]);
-  };
+  const { state, actions } = useCreateForm();
 
   return (
     <ScrollView contentContainerStyle={styles.wrap}>
@@ -60,8 +24,8 @@ export default function CreateScreen() {
           <Chip
             key={c}
             label={c}
-            selected={selCats.includes(c)}
-            onPress={() => onToggle(c, selCats, setSelCats)}
+            selected={state.selectedCategories.includes(c)}
+            onPress={() => actions.toggleCategory(c)}
           />
         ))}
       </View>
@@ -72,8 +36,8 @@ export default function CreateScreen() {
           <Chip
             key={b}
             label={b}
-            selected={selBuckets.includes(b)}
-            onPress={() => onToggle(b, selBuckets, setSelBuckets)}
+            selected={state.selectedBuckets.includes(b)}
+            onPress={() => actions.toggleBucket(b)}
           />
         ))}
       </View>
@@ -84,8 +48,8 @@ export default function CreateScreen() {
           <Chip
             key={s}
             label={s}
-            selected={selStatuses.includes(s)}
-            onPress={() => onToggle(s, selStatuses, setSelStatuses)}
+            selected={state.selectedStatuses.includes(s)}
+            onPress={() => actions.toggleStatus(s)}
           />
         ))}
       </View>
@@ -95,15 +59,15 @@ export default function CreateScreen() {
         <TextInput
           style={styles.input}
           keyboardType="numeric"
-          value={priceMin}
-          onChangeText={setPriceMin}
+          value={state.priceMin}
+          onChangeText={actions.setPriceMin}
         />
         <Text style={{ marginHorizontal: 8 }}>/</Text>
         <TextInput
           style={styles.input}
           keyboardType="numeric"
-          value={priceMax}
-          onChangeText={setPriceMax}
+          value={state.priceMax}
+          onChangeText={actions.setPriceMax}
         />
       </View>
 
@@ -111,62 +75,64 @@ export default function CreateScreen() {
       <TextInput
         style={styles.input}
         keyboardType="numeric"
-        value={count}
-        onChangeText={setCount}
+        value={state.count}
+        onChangeText={actions.setCount}
       />
 
       <View style={styles.buttons}>
         <Button
           title="🚀 Create"
-          disabled={!canCreate || busy}
-          onPress={() => {
-            generate({
-              categories: selCats,
-              weightBuckets: selBuckets,
-              statuses: selStatuses,
-              priceMin: Number(priceMin),
-              priceMax: Number(priceMax),
-              count: Number(count),
-            });
-          }}
+          disabled={!state.canCreate || state.busy}
+          onPress={actions.onCreate}
         />
       </View>
 
       <View style={styles.buttons}>
-        <Button title="🧹 Clean" disabled={busy} onPress={() => clean()} />
+        <Button
+          title="🧹 Clean"
+          disabled={state.busy}
+          onPress={actions.onClean}
+        />
       </View>
 
       <View style={styles.buttons}>
-        <Button title="🔄 Reset" disabled={busy} onPress={() => reset()} />
+        <Button
+          title="🔄 Reset"
+          disabled={state.busy}
+          onPress={actions.onReset}
+        />
       </View>
 
-      {error ? <Text style={styles.err}>Error: {error}</Text> : null}
+      {state.error ? (
+        <Text style={styles.err}>Error: {state.error}</Text>
+      ) : null}
 
       <Text style={styles.h2}>Generation Stats</Text>
-      {genStats ? (
+      {state.genStats ? (
         <View style={styles.box}>
-          <Text>generatedCount: {genStats.generatedCount}</Text>
-          <Text>nullStatusCount: {genStats.nullStatusCount}</Text>
-          <Text>nullKgCount: {genStats.nullKgCount}</Text>
-          <Text>negativePriceCount: {genStats.negativePriceCount}</Text>
+          <Text>generatedCount: {state.genStats.generatedCount}</Text>
+          <Text>nullStatusCount: {state.genStats.nullStatusCount}</Text>
+          <Text>nullKgCount: {state.genStats.nullKgCount}</Text>
+          <Text>negativePriceCount: {state.genStats.negativePriceCount}</Text>
           <Text>
-            start: {new Date(genStats.generationStartAt).toLocaleTimeString()}
+            start:{' '}
+            {new Date(state.genStats.generationStartAt).toLocaleTimeString()}
           </Text>
           <Text>
-            end: {new Date(genStats.generationEndAt).toLocaleTimeString()}
+            end: {new Date(state.genStats.generationEndAt).toLocaleTimeString()}
           </Text>
-          <Text>durationMs: {genStats.generationDurationMs}</Text>
+          <Text>durationMs: {state.genStats.generationDurationMs}</Text>
         </View>
       ) : (
         <Text style={styles.muted}>No data yet</Text>
       )}
 
       <Text style={styles.h2}>Clean Stats</Text>
-      {cleanStats ? (
+      {state.cleanStats ? (
         <View style={styles.box}>
-          <Text>removedCount: {cleanStats.removedCount}</Text>
-          <Text>remainingCount: {cleanStats.remainingCount}</Text>
-          <Text>cleanDurationMs: {cleanStats.cleanDurationMs}</Text>
+          <Text>removedCount: {state.cleanStats.removedCount}</Text>
+          <Text>remainingCount: {state.cleanStats.remainingCount}</Text>
+          <Text>cleanDurationMs: {state.cleanStats.cleanDurationMs}</Text>
         </View>
       ) : (
         <Text style={styles.muted}>No clean run</Text>
