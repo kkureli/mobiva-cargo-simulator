@@ -1,26 +1,31 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import CreateScreen from '../screens/CreateScreen';
-import ListScreen from '../screens/ListScreen';
-import DetailScreen from '../screens/DetailScreen';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import CreateStack from './CreateStack';
+import ListStack from './ListStack';
 
-export type RootStackParamList = {
-  Create: undefined;
-  List: undefined;
-  Detail: { id: string };
+export type RootTabParamList = {
+  CreateTab: undefined;
+  ListTab: undefined;
 };
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
+const Tab = createBottomTabNavigator<RootTabParamList>();
 
 export default function AppNavigator() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Create">
-        <Stack.Screen name="Create" component={CreateScreen} />
-        <Stack.Screen name="List" component={ListScreen} />
-        <Stack.Screen name="Detail" component={DetailScreen} />
-      </Stack.Navigator>
+      <Tab.Navigator screenOptions={{ headerShown: false }}>
+        <Tab.Screen
+          name="CreateTab"
+          component={CreateStack}
+          options={{ title: 'Create' }}
+        />
+        <Tab.Screen
+          name="ListTab"
+          component={ListStack}
+          options={{ title: 'List' }}
+        />
+      </Tab.Navigator>
     </NavigationContainer>
   );
 }
