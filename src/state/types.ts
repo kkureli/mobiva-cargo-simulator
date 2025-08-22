@@ -37,7 +37,7 @@ export type DatasetActions = {
     priceMax: number;
     count: number;
   }) => void;
-  clean: () => void;
+  runClean: () => void;
   reset: () => void;
   setFilters: (f: Partial<CargoFilters>) => void;
   clearError: () => void;

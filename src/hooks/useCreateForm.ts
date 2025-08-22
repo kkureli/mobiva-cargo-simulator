@@ -3,7 +3,7 @@ import { useDatasetStore } from '../state/store';
 
 export function useCreateForm() {
   const generate = useDatasetStore(s => s.generate);
-  const clean = useDatasetStore(s => s.clean);
+  const runClean = useDatasetStore(s => s.runClean);
   const reset = useDatasetStore(s => s.reset);
   const genStats = useDatasetStore(s => s.genStats);
   const cleanStats = useDatasetStore(s => s.cleanStats);
@@ -61,7 +61,7 @@ export function useCreateForm() {
 
   const onClean = () => {
     if (busy) return;
-    clean();
+    runClean();
   };
 
   const onReset = () => {

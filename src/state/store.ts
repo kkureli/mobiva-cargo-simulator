@@ -58,7 +58,7 @@ export const useDatasetStore = create<DatasetStore>((set, get) => ({
     }
   },
 
-  clean: () => {
+  runClean: () => {
     try {
       set({ isCleaning: true, error: null });
       const { raw } = get();
