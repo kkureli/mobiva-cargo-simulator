@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react';
 import { useDatasetStore } from '../state/store';
 import { filterCargoList } from '../core/filter';
 import { CATEGORIES, WEIGHT_BUCKETS } from '../domain/constants';
+import { PRICE_MIN_LIMIT, PRICE_MAX_LIMIT } from '../domain/limits';
+import { InteractionManager } from 'react-native';
 
 export function useListView() {
   const raw = useDatasetStore(s => s.raw);
@@ -9,6 +11,12 @@ export function useListView() {
   const filters = useDatasetStore(s => s.filters);
   const setFilters = useDatasetStore(s => s.setFilters);
 
+  const [localCategories, setLocalCategories] = useState<string[]>(
+    filters.categories,
+  );
+  const [localBuckets, setLocalBuckets] = useState<string[]>(
+    filters.weightBuckets,
+  );
   const [nameQuery, setNameQuery] = useState(filters.nameQuery || '');
   const [priceMin, setPriceMin] = useState(
     typeof filters.priceMin === 'number' ? String(filters.priceMin) : '',
@@ -16,24 +24,24 @@ export function useListView() {
   const [priceMax, setPriceMax] = useState(
     typeof filters.priceMax === 'number' ? String(filters.priceMax) : '',
   );
+  const [formErrors, setFormErrors] = useState<string[]>([]);
 
   const base = clean ?? raw;
-
   const visible = useMemo(() => {
     return filterCargoList(base as any, {
       categories: filters.categories,
       weightBuckets: filters.weightBuckets,
-      priceMin: priceMin === '' ? undefined : Number(priceMin),
-      priceMax: priceMax === '' ? undefined : Number(priceMax),
-      nameQuery,
+      priceMin: filters.priceMin,
+      priceMax: filters.priceMax,
+      nameQuery: filters.nameQuery,
     });
   }, [
     base,
     filters.categories,
     filters.weightBuckets,
-    priceMin,
-    priceMax,
-    nameQuery,
+    filters.priceMin,
+    filters.priceMax,
+    filters.nameQuery,
   ]);
 
   const totalCount = base.length;
@@ -48,15 +56,56 @@ export function useListView() {
     else next([...list, val]);
   };
 
-  const toggleCategory = (v: string) => {
-    toggleIn(v, filters.categories, v2 => setFilters({ categories: v2 }));
-  };
+  const toggleCategory = (v: string) =>
+    toggleIn(v, localCategories, setLocalCategories);
+  const toggleBucket = (v: string) =>
+    toggleIn(v, localBuckets, setLocalBuckets);
 
-  const toggleBucket = (v: string) => {
-    toggleIn(v, filters.weightBuckets, v2 => setFilters({ weightBuckets: v2 }));
+  const validate = () => {
+    const errs: string[] = [];
+    const min = priceMin === '' ? undefined : Number(priceMin);
+    const max = priceMax === '' ? undefined : Number(priceMax);
+
+    if (priceMin !== '' && !Number.isFinite(min))
+      errs.push('Min price sayı olmalı.');
+    if (priceMax !== '' && !Number.isFinite(max))
+      errs.push('Max price sayı olmalı.');
+    if (Number.isFinite(min) && (min as number) < PRICE_MIN_LIMIT)
+      errs.push(`Min price en az ${PRICE_MIN_LIMIT}.`);
+    if (Number.isFinite(max) && (max as number) > PRICE_MAX_LIMIT)
+      errs.push(`Max price en fazla ${PRICE_MAX_LIMIT}.`);
+    if (
+      Number.isFinite(min) &&
+      Number.isFinite(max) &&
+      (min as number) >= (max as number)
+    )
+      errs.push("Min price, max price'tan küçük olmalı.");
+
+    return { errs, min, max };
+  };
+  const applyFilters = () => {
+    const { errs, min, max } = validate();
+    setFormErrors(errs);
+    if (errs.length > 0) return;
+
+    InteractionManager.runAfterInteractions(() => {
+      setFilters({
+        categories: localCategories,
+        weightBuckets: localBuckets,
+        priceMin: typeof min === 'number' ? min : undefined,
+        priceMax: typeof max === 'number' ? max : undefined,
+        nameQuery,
+      });
+    });
   };
 
   const clearFilters = () => {
+    setLocalCategories([]);
+    setLocalBuckets([]);
+    setNameQuery('');
+    setPriceMin('');
+    setPriceMax('');
+    setFormErrors([]);
     setFilters({
       categories: [],
       weightBuckets: [],
@@ -64,9 +113,6 @@ export function useListView() {
       priceMax: undefined,
       nameQuery: '',
     });
-    setNameQuery('');
-    setPriceMin('');
-    setPriceMax('');
   };
 
   return {
@@ -75,16 +121,17 @@ export function useListView() {
     ui: {
       categories: CATEGORIES,
       buckets: WEIGHT_BUCKETS,
-      selectedCategories: filters.categories,
-      selectedBuckets: filters.weightBuckets,
+      selectedCategories: localCategories,
+      selectedBuckets: localBuckets,
       nameQuery,
       setNameQuery,
       priceMin,
       priceMax,
       setPriceMin,
       setPriceMax,
+      formErrors,
     },
-    actions: { toggleCategory, toggleBucket, clearFilters },
+    actions: { toggleCategory, toggleBucket, applyFilters, clearFilters },
     isCleanMode: !!clean,
   };
 }

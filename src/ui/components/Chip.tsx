@@ -8,7 +8,12 @@ type Props = {
   style?: ViewStyle;
 };
 
-export default function Chip({ label, selected, onPress, style }: Props) {
+export default React.memo(function Chip({
+  label,
+  selected,
+  onPress,
+  style,
+}: Props) {
   return (
     <Pressable
       onPress={onPress}
@@ -17,7 +22,7 @@ export default function Chip({ label, selected, onPress, style }: Props) {
       <Text style={selected ? styles.selText : styles.unText}>{label}</Text>
     </Pressable>
   );
-}
+});
 
 const styles = StyleSheet.create({
   base: {

@@ -18,16 +18,6 @@ export default function CreateScreen() {
     <ScrollView contentContainerStyle={styles.wrap}>
       <Text style={styles.h1}>Create Data</Text>
 
-      {state.formErrors.length > 0 && (
-        <View style={styles.errorBox}>
-          {state.formErrors.map((e, i) => (
-            <Text key={i} style={styles.err}>
-              {'\u2022'} {e}
-            </Text>
-          ))}
-        </View>
-      )}
-
       <Text style={styles.label}>Categories (multi)</Text>
       <View style={styles.row}>
         {CATEGORIES.map(c => (
@@ -97,34 +87,36 @@ export default function CreateScreen() {
       <Text style={styles.hint}>
         Geçerli: {limits.COUNT_MIN_LIMIT} .. {limits.COUNT_MAX_LIMIT} (tam sayı)
       </Text>
+      {state.formErrors.length > 0 && (
+        <View style={styles.errorBox}>
+          {state.formErrors.map((e, i) => (
+            <Text key={i} style={styles.err}>
+              {'\u2022'} {e}
+            </Text>
+          ))}
+        </View>
+      )}
+      <View style={styles.inline}>
+        <View style={styles.buttons}>
+          <Button title="🚀 Create" onPress={actions.onCreate} />
+        </View>
 
-      <View style={styles.buttons}>
-        <Button
-          title="🚀 Create"
-          disabled={!state.canCreate}
-          onPress={actions.onCreate}
-        />
+        <View style={styles.buttons}>
+          <Button
+            title="🧹 Clean"
+            onPress={actions.onClean}
+            disabled={state.busy}
+          />
+        </View>
+
+        <View style={styles.buttons}>
+          <Button
+            title="🔄 Reset"
+            onPress={actions.onReset}
+            disabled={state.busy}
+          />
+        </View>
       </View>
-
-      <View style={styles.buttons}>
-        <Button
-          title="🧹 Clean"
-          onPress={actions.onClean}
-          disabled={state.busy}
-        />
-      </View>
-
-      <View style={styles.buttons}>
-        <Button
-          title="🔄 Reset"
-          onPress={actions.onReset}
-          disabled={state.busy}
-        />
-      </View>
-
-      {state.error ? (
-        <Text style={styles.errLine}>Error: {state.error}</Text>
-      ) : null}
 
       <Text style={styles.h2}>Generation Stats</Text>
       {state.genStats ? (
@@ -189,9 +181,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
     padding: 8,
-    marginBottom: 8,
+    marginTop: 16,
   },
   err: { color: '#b42318' },
-  errLine: { color: '#d14343', marginTop: 8 },
-  muted: { color: '#57606a' },
 });

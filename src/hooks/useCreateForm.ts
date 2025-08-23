@@ -15,6 +15,7 @@ export function useCreateForm() {
   const cleanStats = useDatasetStore(s => s.cleanStats);
   const busy = useDatasetStore(s => s.isGenerating || s.isCleaning);
   const storeError = useDatasetStore(s => s.error);
+  const clearStoreError = useDatasetStore(s => s.clearError);
 
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedBuckets, setSelectedBuckets] = useState<string[]>([]);
@@ -128,6 +129,7 @@ export function useCreateForm() {
       onCreate,
       onClean,
       onReset,
+      clearStoreError,
     },
     limits: {
       PRICE_MIN_LIMIT,
