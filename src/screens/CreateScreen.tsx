@@ -12,11 +12,21 @@ import { CATEGORIES, WEIGHT_BUCKETS, STATUSES } from '../domain/constants';
 import { useCreateForm } from '../hooks/useCreateForm';
 
 export default function CreateScreen() {
-  const { state, actions } = useCreateForm();
+  const { state, actions, limits } = useCreateForm();
 
   return (
     <ScrollView contentContainerStyle={styles.wrap}>
       <Text style={styles.h1}>Create Data</Text>
+
+      {state.formErrors.length > 0 && (
+        <View style={styles.errorBox}>
+          {state.formErrors.map((e, i) => (
+            <Text key={i} style={styles.err}>
+              {'\u2022'} {e}
+            </Text>
+          ))}
+        </View>
+      )}
 
       <Text style={styles.label}>Categories (multi)</Text>
       <View style={styles.row}>
@@ -61,6 +71,7 @@ export default function CreateScreen() {
           keyboardType="numeric"
           value={state.priceMin}
           onChangeText={actions.setPriceMin}
+          placeholder={`${limits.PRICE_MIN_LIMIT}`}
         />
         <Text style={{ marginHorizontal: 8 }}>/</Text>
         <TextInput
@@ -68,8 +79,12 @@ export default function CreateScreen() {
           keyboardType="numeric"
           value={state.priceMax}
           onChangeText={actions.setPriceMax}
+          placeholder={`${limits.PRICE_MAX_LIMIT}`}
         />
       </View>
+      <Text style={styles.hint}>
+        Aralık: {limits.PRICE_MIN_LIMIT} .. {limits.PRICE_MAX_LIMIT}
+      </Text>
 
       <Text style={styles.label}>Count</Text>
       <TextInput
@@ -77,12 +92,16 @@ export default function CreateScreen() {
         keyboardType="numeric"
         value={state.count}
         onChangeText={actions.setCount}
+        placeholder={`${limits.COUNT_MIN_LIMIT}-${limits.COUNT_MAX_LIMIT}`}
       />
+      <Text style={styles.hint}>
+        Geçerli: {limits.COUNT_MIN_LIMIT} .. {limits.COUNT_MAX_LIMIT} (tam sayı)
+      </Text>
 
       <View style={styles.buttons}>
         <Button
           title="🚀 Create"
-          disabled={!state.canCreate || state.busy}
+          disabled={!state.canCreate}
           onPress={actions.onCreate}
         />
       </View>
@@ -90,21 +109,21 @@ export default function CreateScreen() {
       <View style={styles.buttons}>
         <Button
           title="🧹 Clean"
-          disabled={state.busy}
           onPress={actions.onClean}
+          disabled={state.busy}
         />
       </View>
 
       <View style={styles.buttons}>
         <Button
           title="🔄 Reset"
-          disabled={state.busy}
           onPress={actions.onReset}
+          disabled={state.busy}
         />
       </View>
 
       {state.error ? (
-        <Text style={styles.err}>Error: {state.error}</Text>
+        <Text style={styles.errLine}>Error: {state.error}</Text>
       ) : null}
 
       <Text style={styles.h2}>Generation Stats</Text>
@@ -163,6 +182,16 @@ const styles = StyleSheet.create({
     padding: 12,
     backgroundColor: '#f6f8fa',
   },
-  err: { color: '#d14343', marginTop: 8 },
+  hint: { color: '#57606a', marginTop: 4 },
+  errorBox: {
+    backgroundColor: '#fde8e8',
+    borderColor: '#d14343',
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 8,
+  },
+  err: { color: '#b42318' },
+  errLine: { color: '#d14343', marginTop: 8 },
   muted: { color: '#57606a' },
 });
