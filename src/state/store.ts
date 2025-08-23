@@ -4,6 +4,7 @@ import { generateRaw } from '../core/gen';
 import { clean as runClean } from '../core/clean';
 import { filterCargoList, CargoFilters } from '../core/filter';
 import { CATEGORIES, WEIGHT_BUCKETS, STATUSES } from '../domain/constants';
+import { CLEAN_TIMEOUT_MS } from '../domain/limits';
 
 const initialFilters: CargoFilters = {
   categories: [],
@@ -62,7 +63,7 @@ export const useDatasetStore = create<DatasetStore>((set, get) => ({
     try {
       set({ isCleaning: true, error: null });
       const { raw } = get();
-      const res = runClean(raw, { timeoutMs: 2000 });
+      const res = runClean(raw, { timeoutMs: CLEAN_TIMEOUT_MS });
       set({
         clean: res.rows,
         cleanStats: {
