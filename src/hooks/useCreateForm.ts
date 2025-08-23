@@ -1,35 +1,61 @@
 import { useMemo, useState } from 'react';
 import { useDatasetStore } from '../state/store';
+import {
+  PRICE_MIN_LIMIT,
+  PRICE_MAX_LIMIT,
+  COUNT_MIN_LIMIT,
+  COUNT_MAX_LIMIT,
+} from '../domain/limits';
 
 export function useCreateForm() {
   const generate = useDatasetStore(s => s.generate);
   const runClean = useDatasetStore(s => s.runClean);
-  const reset = useDatasetStore(s => s.reset);
+  const resetStore = useDatasetStore(s => s.reset);
   const genStats = useDatasetStore(s => s.genStats);
   const cleanStats = useDatasetStore(s => s.cleanStats);
   const busy = useDatasetStore(s => s.isGenerating || s.isCleaning);
-  const error = useDatasetStore(s => s.error);
+  const storeError = useDatasetStore(s => s.error);
 
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedBuckets, setSelectedBuckets] = useState<string[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
-  const [priceMin, setPriceMin] = useState<string>('-100');
-  const [priceMax, setPriceMax] = useState<string>('1000');
+  const [priceMin, setPriceMin] = useState<string>(String(PRICE_MIN_LIMIT));
+  const [priceMax, setPriceMax] = useState<string>(String(PRICE_MAX_LIMIT));
   const [count, setCount] = useState<string>('1000');
+  const [formErrors, setFormErrors] = useState<string[]>([]);
 
-  const canCreate = useMemo(() => {
+  const parsed = useMemo(() => {
     const min = Number(priceMin);
     const max = Number(priceMax);
-    const c = Number(count);
-    return (
-      Number.isFinite(min) &&
-      Number.isFinite(max) &&
-      min < max &&
-      Number.isFinite(c) &&
-      c >= 1 &&
-      c <= 10000
-    );
+    const cnt = Number(count);
+    return { min, max, cnt };
   }, [priceMin, priceMax, count]);
+
+  const errors = useMemo(() => {
+    const e: string[] = [];
+    if (!Number.isFinite(parsed.min)) e.push('Price min number olmalı.');
+    if (!Number.isFinite(parsed.max)) e.push('Price max number olmalı.');
+    if (Number.isFinite(parsed.min) && parsed.min < PRICE_MIN_LIMIT)
+      e.push(`Price min en az ${PRICE_MIN_LIMIT}.`);
+    if (Number.isFinite(parsed.max) && parsed.max > PRICE_MAX_LIMIT)
+      e.push(`Price max en fazla ${PRICE_MAX_LIMIT}.`);
+    if (
+      Number.isFinite(parsed.min) &&
+      Number.isFinite(parsed.max) &&
+      parsed.min >= parsed.max
+    )
+      e.push("Price min, max'ten küçük olmalı.");
+    if (!Number.isFinite(parsed.cnt)) e.push('Count number olmalı.');
+    if (Number.isFinite(parsed.cnt) && parsed.cnt % 1 !== 0)
+      e.push('Count tam sayı olmalı.');
+    if (Number.isFinite(parsed.cnt) && parsed.cnt < COUNT_MIN_LIMIT)
+      e.push(`Count en az ${COUNT_MIN_LIMIT}.`);
+    if (Number.isFinite(parsed.cnt) && parsed.cnt > COUNT_MAX_LIMIT)
+      e.push(`Count en fazla ${COUNT_MAX_LIMIT}.`);
+    return e;
+  }, [parsed]);
+
+  const canCreate = errors.length === 0 && !busy;
 
   const toggleIn = (
     val: string,
@@ -48,14 +74,15 @@ export function useCreateForm() {
     toggleIn(v, selectedStatuses, setSelectedStatuses);
 
   const onCreate = () => {
-    if (!canCreate || busy) return;
+    setFormErrors(errors);
+    if (errors.length > 0 || busy) return;
     generate({
       categories: selectedCategories,
       weightBuckets: selectedBuckets,
       statuses: selectedStatuses,
-      priceMin: Number(priceMin),
-      priceMax: Number(priceMax),
-      count: Number(count),
+      priceMin: parsed.min,
+      priceMax: parsed.max,
+      count: parsed.cnt,
     });
   };
 
@@ -66,13 +93,14 @@ export function useCreateForm() {
 
   const onReset = () => {
     if (busy) return;
-    reset();
+    resetStore();
     setSelectedCategories([]);
     setSelectedBuckets([]);
     setSelectedStatuses([]);
-    setPriceMin('-100');
-    setPriceMax('1000');
+    setPriceMin(String(PRICE_MIN_LIMIT));
+    setPriceMax(String(PRICE_MAX_LIMIT));
     setCount('1000');
+    setFormErrors([]);
   };
 
   return {
@@ -85,9 +113,10 @@ export function useCreateForm() {
       count,
       canCreate,
       busy,
-      error,
+      error: storeError,
       genStats,
       cleanStats,
+      formErrors,
     },
     actions: {
       setPriceMin,
@@ -99,6 +128,12 @@ export function useCreateForm() {
       onCreate,
       onClean,
       onReset,
+    },
+    limits: {
+      PRICE_MIN_LIMIT,
+      PRICE_MAX_LIMIT,
+      COUNT_MIN_LIMIT,
+      COUNT_MAX_LIMIT,
     },
   };
 }
