@@ -62,7 +62,7 @@ export const useDatasetStore = create<DatasetStore>((set, get) => ({
     try {
       set({ isCleaning: true, error: null });
       const { raw } = get();
-      const res = runClean(raw);
+      const res = runClean(raw, { timeoutMs: 2000 });
       set({
         clean: res.rows,
         cleanStats: {
