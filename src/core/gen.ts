@@ -43,7 +43,9 @@ export function generateRaw(params: GenParams) {
     throw new Error('price aralığı geçersiz');
   if (!Number.isFinite(count) || count < 1 || count > 10000)
     throw new Error('count 1..10000 olmalı');
-
+  if (count > 10000) {
+    throw new Error('OUT_OF_MEMORY: too many rows requested');
+  }
   const rows: RawCargo[] = new Array(count);
 
   const nullStatusTarget = Math.floor(count * 0.05);
