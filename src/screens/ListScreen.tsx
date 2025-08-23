@@ -72,8 +72,6 @@ export default function ListScreen() {
         />
       </View>
       <View style={styles.inline}>
-        <Button title="Apply" onPress={actions.applyPrice} />
-        <View style={{ width: 12 }} />
         <Button title="Clear" onPress={actions.clearFilters} />
       </View>
 

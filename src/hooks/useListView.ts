@@ -56,12 +56,6 @@ export function useListView() {
     toggleIn(v, filters.weightBuckets, v2 => setFilters({ weightBuckets: v2 }));
   };
 
-  const applyPrice = () => {
-    const min = priceMin === '' ? undefined : Number(priceMin);
-    const max = priceMax === '' ? undefined : Number(priceMax);
-    setFilters({ priceMin: min, priceMax: max, nameQuery });
-  };
-
   const clearFilters = () => {
     setFilters({
       categories: [],
@@ -90,7 +84,7 @@ export function useListView() {
       setPriceMin,
       setPriceMax,
     },
-    actions: { toggleCategory, toggleBucket, applyPrice, clearFilters },
+    actions: { toggleCategory, toggleBucket, clearFilters },
     isCleanMode: !!clean,
   };
 }
