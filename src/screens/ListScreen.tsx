@@ -7,6 +7,7 @@ import {
   FlatList,
   Pressable,
   StyleSheet,
+  ScrollView,
 } from 'react-native';
 import Chip from '../ui/components/Chip';
 import { useListView } from '../hooks/useListView';
@@ -18,7 +19,7 @@ export default function ListScreen() {
   const nav = useNavigation<any>();
 
   return (
-    <View style={styles.wrap}>
+    <ScrollView style={styles.wrap}>
       <Text style={styles.h1}>List</Text>
 
       <Text style={styles.label}>Categories</Text>
@@ -101,7 +102,7 @@ export default function ListScreen() {
           );
         }}
       />
-    </View>
+    </ScrollView>
   );
 }
 
