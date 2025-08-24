@@ -8,7 +8,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import Chip from '../ui/components/Chip';
-import { CATEGORIES, WEIGHT_BUCKETS, STATUSES } from '../domain/constants';
+import { CATEGORIES, WEIGHT_BUCKETS, STATUSES } from '../models/constants';
 import { useCreateForm } from '../hooks/useCreateForm';
 
 export default function CreateScreen() {

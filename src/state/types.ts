@@ -1,5 +1,5 @@
-import { Category, Status, WeightBucket } from '../domain/constants';
-import { RawCargo, CleanCargo, CargoFilters } from '../domain/types';
+import { Category, Status, WeightBucket } from '../models/constants';
+import { RawCargo, CleanCargo, CargoFilters } from '../models/types';
 
 export type GenerationStats = {
   generatedCount: number;

@@ -1,5 +1,5 @@
-import { Category, WeightBucket } from '../domain/constants';
-import { CargoFilters, RawCargo } from '../domain/types';
+import { Category, WeightBucket } from '../models/constants';
+import { CargoFilters, RawCargo } from '../models/types';
 
 function parseBucket(bucket: WeightBucket): [number, number] {
   const [minStr, maxStr] = bucket.split('-');

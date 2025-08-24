@@ -2,8 +2,8 @@ import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { useDatasetStore } from '../state/store';
-import { CATEGORIES, STATUSES } from '../domain/constants';
-import type { RawCargo, CleanCargo } from '../domain/types';
+import { CATEGORIES, STATUSES } from '../models/constants';
+import type { RawCargo, CleanCargo } from '../models/types';
 
 const catSet = new Set(CATEGORIES);
 const statusSet = new Set(STATUSES);

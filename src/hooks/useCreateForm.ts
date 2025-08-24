@@ -5,9 +5,9 @@ import {
   PRICE_MAX_LIMIT,
   COUNT_MIN_LIMIT,
   COUNT_MAX_LIMIT,
-} from '../domain/limits';
-import type { Category, Status, WeightBucket } from '../domain/constants';
-import { parseNumStrict } from '../core/number';
+} from '../models/limits';
+import type { Category, Status, WeightBucket } from '../models/constants';
+import { parseNumStrict } from '../utils/number';
 
 export function useCreateForm() {
   const generate = useDatasetStore(s => s.generate);
