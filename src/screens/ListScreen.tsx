@@ -14,6 +14,7 @@ import { isRawDirty } from '../utils/dirty';
 import { useNavigation } from '@react-navigation/native';
 import { PRICE_MAX_LIMIT, PRICE_MIN_LIMIT } from '../models/limits';
 import type { RawCargo, CleanCargo } from '../models/types';
+import { useRenderTimer } from '../hooks/useRenderTimer';
 
 type ListItemData = RawCargo | CleanCargo;
 
@@ -122,6 +123,7 @@ const MemoListItem = React.memo(function ListItem({
 export default function ListScreen() {
   const { data, counts, ui, actions, isCleanMode } = useListView();
   const nav = useNavigation<any>();
+  const { renderMs, onContentSized } = useRenderTimer(data.length);
 
   const keyExtractor = useCallback((it: ListItemData) => it.id, []);
   const renderItem = useCallback(
@@ -145,8 +147,11 @@ export default function ListScreen() {
         Total: {counts.totalCount} • Result: {counts.resultCount} • Mode:{' '}
         {isCleanMode ? 'Clean' : 'Raw'}
       </Text>
-
+      {renderMs != null ? (
+        <Text style={styles.meta}>List render: {renderMs} ms</Text>
+      ) : null}
       <FlatList
+        onContentSizeChange={onContentSized}
         data={data}
         keyExtractor={keyExtractor}
         ListHeaderComponent={<ListHeader ui={ui} actions={actions} />}
