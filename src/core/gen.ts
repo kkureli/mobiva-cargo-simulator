@@ -33,18 +33,20 @@ export function generateRaw(params: GenParams) {
   const { categories, weightBuckets, statuses, priceMin, priceMax, count } =
     params;
 
-  if (!categories.length) throw new Error('categories boş');
+  if (!categories.length) throw new Error('Categories boş');
   if (!weightBuckets.length) throw new Error('weightBuckets boş');
   if (
     !Number.isFinite(priceMin) ||
     !Number.isFinite(priceMax) ||
     priceMin >= priceMax
   )
-    throw new Error('price aralığı geçersiz');
+    throw new Error('Price aralığı geçersiz');
   if (!Number.isFinite(count) || count < 1 || count > 10000)
-    throw new Error('count 1..10000 olmalı');
+    throw new Error('Count 1 - 10000 arası olmalı');
   if (count > 10000) {
-    throw new Error('OUT_OF_MEMORY: too many rows requested');
+    throw new Error(
+      'OUT_OF_MEMORY: Bellek yetersiz, 10000 satırdan fazla üretilemez',
+    );
   }
   const rows: RawCargo[] = new Array(count);
 

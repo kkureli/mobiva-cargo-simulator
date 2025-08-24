@@ -25,7 +25,7 @@ export function clean(
 
   for (let i = 0; i < rows.length; i++) {
     if (Date.now() - t0 > timeout) {
-      throw new Error('TIMEOUT: clean exceeded time budget');
+      throw new Error('TIMEOUT: Temizleme işlemi zaman aşımına uğradı');
     }
 
     const r = rows[i];
