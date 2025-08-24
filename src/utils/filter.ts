@@ -10,12 +10,10 @@ function isInBucketNum(kg: number, min: number, max: number): boolean {
   return kg >= min && kg < max;
 }
 
-export function filterCargoList<
-  T extends Pick<RawCargo, 'category' | 'price' | 'name' | 'kg'>,
->(cargoList: T[], filters: CargoFilters): T[] {
+export function filterCargoList(cargoList: RawCargo[], filters: CargoFilters) {
   if (!Array.isArray(cargoList) || cargoList.length === 0) return [];
 
-  const filtered: T[] = [];
+  const filtered = [];
   const selectedCategories = filters.categories.length
     ? new Set(filters.categories)
     : null;
