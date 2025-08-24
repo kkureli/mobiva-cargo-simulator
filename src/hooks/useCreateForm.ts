@@ -6,6 +6,8 @@ import {
   COUNT_MIN_LIMIT,
   COUNT_MAX_LIMIT,
 } from '../domain/limits';
+import type { Category, Status, WeightBucket } from '../domain/constants';
+import { parseNumStrict } from '../core/number';
 
 export function useCreateForm() {
   const generate = useDatasetStore(s => s.generate);
@@ -17,18 +19,18 @@ export function useCreateForm() {
   const storeError = useDatasetStore(s => s.error);
   const clearStoreError = useDatasetStore(s => s.clearError);
 
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedBuckets, setSelectedBuckets] = useState<string[]>([]);
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
+  const [selectedBuckets, setSelectedBuckets] = useState<WeightBucket[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<Status[]>([]);
   const [priceMin, setPriceMin] = useState<string>(String(PRICE_MIN_LIMIT));
   const [priceMax, setPriceMax] = useState<string>(String(PRICE_MAX_LIMIT));
   const [count, setCount] = useState<string>('1000');
   const [formErrors, setFormErrors] = useState<string[]>([]);
 
   const parsed = useMemo(() => {
-    const min = Number(priceMin);
-    const max = Number(priceMax);
-    const cnt = Number(count);
+    const min = parseNumStrict(priceMin);
+    const max = parseNumStrict(priceMax);
+    const cnt = parseNumStrict(count);
     return { min, max, cnt };
   }, [priceMin, priceMax, count]);
 
@@ -46,6 +48,7 @@ export function useCreateForm() {
       parsed.min >= parsed.max
     )
       e.push("Price min, max'ten küçük olmalı.");
+
     if (!Number.isFinite(parsed.cnt)) e.push('Count number olmalı.');
     if (Number.isFinite(parsed.cnt) && parsed.cnt % 1 !== 0)
       e.push('Count tam sayı olmalı.');
@@ -58,20 +61,16 @@ export function useCreateForm() {
 
   const canCreate = errors.length === 0 && !busy;
 
-  const toggleIn = (
-    val: string,
-    list: string[],
-    setter: (s: string[]) => void,
-  ) => {
+  const toggleIn = <T>(val: T, list: T[], setter: (s: T[]) => void) => {
     if (list.includes(val)) setter(list.filter(x => x !== val));
     else setter([...list, val]);
   };
 
-  const toggleCategory = (v: string) =>
+  const toggleCategory = (v: Category) =>
     toggleIn(v, selectedCategories, setSelectedCategories);
-  const toggleBucket = (v: string) =>
+  const toggleBucket = (v: WeightBucket) =>
     toggleIn(v, selectedBuckets, setSelectedBuckets);
-  const toggleStatus = (v: string) =>
+  const toggleStatus = (v: Status) =>
     toggleIn(v, selectedStatuses, setSelectedStatuses);
 
   const onCreate = () => {
@@ -95,6 +94,7 @@ export function useCreateForm() {
   const onReset = () => {
     if (busy) return;
     resetStore();
+    clearStoreError();
     setSelectedCategories([]);
     setSelectedBuckets([]);
     setSelectedStatuses([]);

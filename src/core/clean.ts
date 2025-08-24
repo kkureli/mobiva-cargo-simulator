@@ -1,5 +1,5 @@
-import { CleanCargo, RawCargo, Status } from '../domain/types';
-import { CATEGORIES, STATUSES } from '../domain/constants';
+import { CleanCargo, RawCargo } from '../domain/types';
+import { CATEGORIES, Status, STATUSES } from '../domain/constants';
 
 const catSet = new Set(CATEGORIES);
 const statusSet = new Set(STATUSES);

@@ -1,20 +1,12 @@
-export type Status =
-  | 'PREPARING'
-  | 'AT_BRANCH'
-  | 'OUT_FOR_DELIVERY'
-  | 'DELIVERED'
-  | 'DELIVERY_FAILED';
+import type { Status, Category, WeightBucket } from './constants';
 
-export type Category =
-  | 'electronics'
-  | 'cleaning'
-  | 'apparel'
-  | 'food'
-  | 'books'
-  | 'cosmetics'
-  | 'homeliving'
-  | 'toys'
-  | 'sports';
+export interface CargoFilters {
+  categories: Category[];
+  weightBuckets: WeightBucket[];
+  priceMin?: number;
+  priceMax?: number;
+  nameQuery: string;
+}
 
 export interface RawCargo {
   id: string;

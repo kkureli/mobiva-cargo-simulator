@@ -14,7 +14,7 @@ const Tab = createBottomTabNavigator<RootTabParamList>();
 export default function AppNavigator() {
   return (
     <NavigationContainer>
-      <Tab.Navigator screenOptions={{ headerShown: false }}>
+      <Tab.Navigator screenOptions={{ headerShown: false, lazy: true }}>
         <Tab.Screen
           name="CreateTab"
           component={CreateStack}

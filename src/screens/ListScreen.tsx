@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,9 @@ import { useListView } from '../hooks/useListView';
 import { isRawDirty } from '../core/dirty';
 import { useNavigation } from '@react-navigation/native';
 import { PRICE_MAX_LIMIT, PRICE_MIN_LIMIT } from '../domain/limits';
+import type { RawCargo, CleanCargo } from '../domain/types';
+
+type ListItemData = RawCargo | CleanCargo;
 
 function ListHeader({ ui, actions }: any) {
   return (
@@ -94,7 +97,11 @@ const MemoListItem = React.memo(function ListItem({
   item,
   onPress,
   dirty,
-}: any) {
+}: {
+  item: ListItemData;
+  onPress: () => void;
+  dirty: boolean;
+}) {
   return (
     <Pressable
       onPress={onPress}
@@ -104,7 +111,10 @@ const MemoListItem = React.memo(function ListItem({
       <Text>{item.category}</Text>
       <Text>kg: {item.kg ?? '-'}</Text>
       <Text>price: {item.price}</Text>
-      <Text>status: {String(item.status)}</Text>
+      <Text>
+        status:{' '}
+        {String((item as RawCargo).status ?? (item as CleanCargo).status)}
+      </Text>
     </Pressable>
   );
 });
@@ -113,10 +123,10 @@ export default function ListScreen() {
   const { data, counts, ui, actions, isCleanMode } = useListView();
   const nav = useNavigation<any>();
 
-  const keyExtractor = useCallback((it: any) => it.id, []);
+  const keyExtractor = useCallback((it: ListItemData) => it.id, []);
   const renderItem = useCallback(
-    ({ item }: any) => {
-      const dirty = isCleanMode ? false : isRawDirty(item as any);
+    ({ item }: { item: ListItemData }) => {
+      const dirty = isCleanMode ? false : isRawDirty(item as RawCargo);
       return (
         <MemoListItem
           item={item}
@@ -126,11 +136,6 @@ export default function ListScreen() {
       );
     },
     [isCleanMode, nav],
-  );
-
-  const ListHeaderMemo = useMemo(
-    () => <ListHeader ui={ui} actions={actions} />,
-    [ui, actions],
   );
 
   return (
@@ -144,18 +149,13 @@ export default function ListScreen() {
       <FlatList
         data={data}
         keyExtractor={keyExtractor}
-        ListHeaderComponent={ListHeaderMemo}
+        ListHeaderComponent={<ListHeader ui={ui} actions={actions} />}
         ListEmptyComponent={<Text style={styles.muted}>No results</Text>}
         renderItem={renderItem}
         initialNumToRender={20}
         windowSize={10}
         maxToRenderPerBatch={20}
         removeClippedSubviews
-        getItemLayout={(_, index) => ({
-          length: 88,
-          offset: 88 * index,
-          index,
-        })}
       />
     </View>
   );

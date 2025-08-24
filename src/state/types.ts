@@ -1,5 +1,5 @@
-import { RawCargo, CleanCargo } from '../domain/types';
-import { CargoFilters } from '../core/filter';
+import { Category, Status, WeightBucket } from '../domain/constants';
+import { RawCargo, CleanCargo, CargoFilters } from '../domain/types';
 
 export type GenerationStats = {
   generatedCount: number;
@@ -30,9 +30,9 @@ export type DatasetState = {
 
 export type DatasetActions = {
   generate: (params: {
-    categories: string[];
-    weightBuckets: string[];
-    statuses: string[];
+    categories: Category[];
+    weightBuckets: WeightBucket[];
+    statuses: Status[];
     priceMin: number;
     priceMax: number;
     count: number;

@@ -1,25 +1,29 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, RouteProp } from '@react-navigation/native';
 import { useDatasetStore } from '../state/store';
 import { CATEGORIES, STATUSES } from '../domain/constants';
+import type { RawCargo, CleanCargo } from '../domain/types';
 
 const catSet = new Set(CATEGORIES);
 const statusSet = new Set(STATUSES);
 const uuidV4 =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+type DetailParams = { Detail: { id: string } };
+
 export default function DetailScreen() {
-  const route = useRoute<any>();
-  const { id } = route.params as { id: string };
+  const route = useRoute<RouteProp<DetailParams, 'Detail'>>();
+  const { id } = route.params;
 
   const raw = useDatasetStore(s => s.raw);
   const clean = useDatasetStore(s => s.clean);
 
-  const item = useMemo(() => {
-    const base = clean ?? raw;
-    return base.find(x => x.id === id);
-  }, [id, raw, clean]);
+  const base = clean ?? raw;
+  const item = useMemo<RawCargo | CleanCargo | undefined>(
+    () => base.find(x => x.id === id),
+    [base, id],
+  );
 
   if (!item) {
     return (
@@ -33,10 +37,14 @@ export default function DetailScreen() {
 
   const idDirty = !inCleanMode && !uuidV4.test(item.id);
   const categoryDirty = !inCleanMode && !catSet.has(item.category);
-  const priceDirty = !inCleanMode && item.price < 0;
+  const priceDirty =
+    !inCleanMode && (!Number.isFinite(item.price) || item.price < 0);
   const statusDirty =
-    !inCleanMode && (!item.status || !statusSet.has(item.status as any));
-  const kgDirty = !inCleanMode && item.kg == null;
+    !inCleanMode &&
+    (typeof (item as RawCargo).status !== 'string' ||
+      !statusSet.has((item as RawCargo).status as any));
+  const kgDirty =
+    !inCleanMode && !Number.isFinite((item as RawCargo).kg as number);
 
   return (
     <View style={styles.wrap}>
@@ -51,10 +59,16 @@ export default function DetailScreen() {
           price: {item.price}
         </Text>
         <Text style={[styles.row, statusDirty && styles.dirty]}>
-          status: {String(item.status)}
+          status:{' '}
+          {inCleanMode
+            ? String((item as CleanCargo).status)
+            : String((item as RawCargo).status)}
         </Text>
         <Text style={[styles.row, kgDirty && styles.dirty]}>
-          kg: {String(item.kg)}
+          kg:{' '}
+          {inCleanMode
+            ? String((item as CleanCargo).kg)
+            : String((item as RawCargo).kg)}
         </Text>
         <Text style={styles.row}>
           createdAt: {new Date(item.createdAt).toLocaleString()}

@@ -1,10 +1,10 @@
-import { RawCargo, Category, Status } from '../domain/types';
-import { STATUSES } from '../domain/constants';
+import { RawCargo } from '../domain/types';
+import { Category, Status, STATUSES, WeightBucket } from '../domain/constants';
 import { uuidv4, randomAlnum, pick } from './random';
 
 export type GenParams = {
   categories: Category[];
-  weightBuckets: string[];
+  weightBuckets: WeightBucket[];
   statuses: Status[];
   priceMin: number;
   priceMax: number;

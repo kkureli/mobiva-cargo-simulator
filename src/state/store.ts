@@ -2,9 +2,9 @@ import { create } from 'zustand';
 import { DatasetStore } from './types';
 import { generateRaw } from '../core/gen';
 import { clean as runClean } from '../core/clean';
-import { filterCargoList, CargoFilters } from '../core/filter';
 import { CATEGORIES, WEIGHT_BUCKETS, STATUSES } from '../domain/constants';
 import { CLEAN_TIMEOUT_MS } from '../domain/limits';
+import { CargoFilters } from '../domain/types';
 
 const initialFilters: CargoFilters = {
   categories: [],
@@ -28,13 +28,13 @@ export const useDatasetStore = create<DatasetStore>((set, get) => ({
     try {
       set({ isGenerating: true, error: null });
       const res = generateRaw({
-        categories: (params.categories.length
+        categories: params.categories.length
           ? params.categories
-          : CATEGORIES) as any,
+          : (CATEGORIES as any),
         weightBuckets: params.weightBuckets.length
           ? params.weightBuckets
           : WEIGHT_BUCKETS,
-        statuses: (params.statuses.length ? params.statuses : STATUSES) as any,
+        statuses: params.statuses.length ? params.statuses : (STATUSES as any),
         priceMin: params.priceMin,
         priceMax: params.priceMax,
         count: params.count,
@@ -84,7 +84,7 @@ export const useDatasetStore = create<DatasetStore>((set, get) => ({
       clean: null,
       genStats: null,
       cleanStats: null,
-      filters: initialFilters,
+      filters: { ...initialFilters },
       isGenerating: false,
       isCleaning: false,
       error: null,
@@ -94,10 +94,6 @@ export const useDatasetStore = create<DatasetStore>((set, get) => ({
   setFilters: f => {
     const next = { ...get().filters, ...f };
     set({ filters: next });
-    const { clean, raw } = get();
-    const base = clean ?? raw;
-    const filtered = filterCargoList(base as any, next);
-    set({ clean: clean ? (filtered as any) : null });
   },
 
   clearError: () => set({ error: null }),

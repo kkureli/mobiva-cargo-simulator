@@ -4,6 +4,8 @@ import { filterCargoList } from '../core/filter';
 import { CATEGORIES, WEIGHT_BUCKETS } from '../domain/constants';
 import { PRICE_MIN_LIMIT, PRICE_MAX_LIMIT } from '../domain/limits';
 import { InteractionManager } from 'react-native';
+import type { Category, WeightBucket } from '../domain/constants';
+import { parseNumStrict } from '../core/number';
 
 export function useListView() {
   const raw = useDatasetStore(s => s.raw);
@@ -11,10 +13,10 @@ export function useListView() {
   const filters = useDatasetStore(s => s.filters);
   const setFilters = useDatasetStore(s => s.setFilters);
 
-  const [localCategories, setLocalCategories] = useState<string[]>(
+  const [localCategories, setLocalCategories] = useState<Category[]>(
     filters.categories,
   );
-  const [localBuckets, setLocalBuckets] = useState<string[]>(
+  const [localBuckets, setLocalBuckets] = useState<WeightBucket[]>(
     filters.weightBuckets,
   );
   const [nameQuery, setNameQuery] = useState(filters.nameQuery || '');
@@ -47,24 +49,20 @@ export function useListView() {
   const totalCount = base.length;
   const resultCount = visible.length;
 
-  const toggleIn = (
-    val: string,
-    list: string[],
-    next: (v: string[]) => void,
-  ) => {
+  const toggleIn = <T>(val: T, list: T[], next: (v: T[]) => void) => {
     if (list.includes(val)) next(list.filter(x => x !== val));
     else next([...list, val]);
   };
 
-  const toggleCategory = (v: string) =>
+  const toggleCategory = (v: Category) =>
     toggleIn(v, localCategories, setLocalCategories);
-  const toggleBucket = (v: string) =>
+  const toggleBucket = (v: WeightBucket) =>
     toggleIn(v, localBuckets, setLocalBuckets);
 
   const validate = () => {
     const errs: string[] = [];
-    const min = priceMin === '' ? undefined : Number(priceMin);
-    const max = priceMax === '' ? undefined : Number(priceMax);
+    const min = priceMin === '' ? undefined : parseNumStrict(priceMin);
+    const max = priceMax === '' ? undefined : parseNumStrict(priceMax);
 
     if (priceMin !== '' && !Number.isFinite(min))
       errs.push('Min price sayı olmalı.');
@@ -83,11 +81,11 @@ export function useListView() {
 
     return { errs, min, max };
   };
+
   const applyFilters = () => {
     const { errs, min, max } = validate();
     setFormErrors(errs);
     if (errs.length > 0) return;
-
     InteractionManager.runAfterInteractions(() => {
       setFilters({
         categories: localCategories,

@@ -18,6 +18,14 @@ export default function CreateScreen() {
     <ScrollView contentContainerStyle={styles.wrap}>
       <Text style={styles.h1}>Create Data</Text>
 
+      {state.error ? (
+        <View style={styles.errorBox}>
+          <Text style={styles.err}>{state.error}</Text>
+          <View style={{ height: 8 }} />
+          <Button title="Dismiss" onPress={actions.clearStoreError} />
+        </View>
+      ) : null}
+
       <Text style={styles.label}>Categories (multi)</Text>
       <View style={styles.row}>
         {CATEGORIES.map(c => (
@@ -87,6 +95,7 @@ export default function CreateScreen() {
       <Text style={styles.hint}>
         Geçerli: {limits.COUNT_MIN_LIMIT} .. {limits.COUNT_MAX_LIMIT} (tam sayı)
       </Text>
+
       {state.formErrors.length > 0 && (
         <View style={styles.errorBox}>
           {state.formErrors.map((e, i) => (
@@ -96,9 +105,14 @@ export default function CreateScreen() {
           ))}
         </View>
       )}
+
       <View style={styles.inline}>
         <View style={styles.buttons}>
-          <Button title="🚀 Create" onPress={actions.onCreate} />
+          <Button
+            title="🚀 Create"
+            onPress={actions.onCreate}
+            disabled={state.busy}
+          />
         </View>
 
         <View style={styles.buttons}>
@@ -184,4 +198,5 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   err: { color: '#b42318' },
+  muted: { color: '#57606a' },
 });
