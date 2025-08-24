@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 import { DatasetStore } from './types';
-import { generateRaw } from '../core/gen';
-import { clean as runClean } from '../core/clean';
-import { CATEGORIES, WEIGHT_BUCKETS, STATUSES } from '../domain/constants';
-import { CLEAN_TIMEOUT_MS } from '../domain/limits';
-import { CargoFilters } from '../domain/types';
+import { generateRaw } from '../utils/gen';
+import { clean as runClean } from '../utils/clean';
+import { CATEGORIES, WEIGHT_BUCKETS, STATUSES } from '../models/constants';
+import { CLEAN_TIMEOUT_MS } from '../models/limits';
+import { CargoFilters } from '../models/types';
 
 const initialFilters: CargoFilters = {
   categories: [],
