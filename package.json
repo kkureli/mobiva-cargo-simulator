@@ -18,6 +18,8 @@
     "react-native": "0.81.0",
     "react-native-safe-area-context": "^5.6.1",
     "react-native-screens": "^4.15.2",
+    "react-native-svg": "^15.12.1",
+    "react-native-svg-transformer": "^1.5.1",
     "react-native-uuid": "^2.0.3",
     "zustand": "^5.0.8"
   },
