@@ -20,6 +20,7 @@ export interface RawCargo {
   status: Status | null;
   kg: number | null;
   createdAt: number;
+  imageUrl?: string;
 }
 
 export interface CleanCargo {
@@ -30,4 +31,5 @@ export interface CleanCargo {
   status: Status;
   kg: number;
   createdAt: number;
+  imageUrl?: string;
 }

@@ -106,6 +106,7 @@ export function createCargoDataset(params: GenParams) {
     } else {
       status = pick(statusPool);
     }
+    const imageUrl = `https://picsum.photos/seed/${id.slice(0, 8)}/120/120`;
 
     rows[i] = {
       id,
@@ -115,6 +116,7 @@ export function createCargoDataset(params: GenParams) {
       status,
       kg,
       createdAt: Date.now(),
+      imageUrl,
     };
   }
 
