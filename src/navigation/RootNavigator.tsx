@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import CreateStack from './CreateStack';
 import ListStack from './ListStack';
-import CustomIcon from '../ui/components/Icon';
+import CustomIcon, { CustomIconName } from '../ui/components/Icon';
 
 export type RootTabParamList = {
   CreateTab: undefined;
@@ -11,6 +11,24 @@ export type RootTabParamList = {
 };
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
+
+function renderTabBarIcon(
+  routeName: keyof RootTabParamList,
+  size: number,
+  focused: boolean,
+) {
+  const icons = {
+    CreateTab: 'PlusIcon',
+    ListTab: 'ListIcon',
+  };
+  return (
+    <CustomIcon
+      name={icons[routeName] as CustomIconName}
+      size={size}
+      color={focused ? '#111827' : '#6b7280'}
+    />
+  );
+}
 
 export default function AppNavigator() {
   return (
@@ -25,22 +43,8 @@ export default function AppNavigator() {
           },
           tabBarActiveTintColor: '#111827',
           tabBarInactiveTintColor: '#6b7280',
-          tabBarIcon: ({ color, size, focused }) =>
-            route.name === 'CreateTab' ? (
-              <CustomIcon
-                name="PlusIcon"
-                width={size}
-                height={size}
-                color={focused ? '#111827' : '#6b7280'}
-              />
-            ) : (
-              <CustomIcon
-                name="ListIcon"
-                width={size}
-                height={size}
-                color={focused ? '#111827' : '#6b7280'}
-              />
-            ),
+          tabBarIcon: ({ size, focused }) =>
+            renderTabBarIcon(route.name, size, focused),
         })}
       >
         <Tab.Screen
