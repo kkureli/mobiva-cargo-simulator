@@ -5,6 +5,14 @@ State management is handled with **Zustand**, algorithms are implemented **witho
 
 ---
 
+## Prerequisites
+
+- Node.js **22+**
+- JDK **17** (Android)
+- Android Studio + Android SDK (platform-tools, build-tools)
+- Xcode **15+** (iOS) + CocoaPods (`gem install cocoapods`)
+- React Native CLI toolchain (Watchman recommended on macOS)
+
 ## Table of Contents
 - [Setup & Run](#setup--run)
 - [Architecture & Folder Structure](#architecture--folder-structure)
@@ -70,6 +78,7 @@ src/
     useCreateForm.ts  # CreateScreen form state & validation
     useListView.ts    # ListScreen filter logic
   ui/
+    theme/
     components/
       Chip.tsx
     ErrorBoundary.tsx
