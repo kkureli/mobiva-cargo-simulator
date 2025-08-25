@@ -5,6 +5,14 @@ State management is handled with **Zustand**, algorithms are implemented **witho
 
 ---
 
+## Prerequisites
+
+- Node.js **22+**
+- JDK **17** (Android)
+- Android Studio + Android SDK (platform-tools, build-tools)
+- Xcode **15+** (iOS) + CocoaPods (`gem install cocoapods`)
+- React Native CLI toolchain (Watchman recommended on macOS)
+
 ## Table of Contents
 - [Setup & Run](#setup--run)
 - [Architecture & Folder Structure](#architecture--folder-structure)
@@ -42,7 +50,7 @@ npx react-native run-ios
 
 **ErrorBoundary** fallback is visible in **release builds** (RedBox dominates in dev mode):
 ```bash
-npx react-native run-android --variant release
+npx react-native run-android --mode=release
 npx react-native run-ios --configuration Release
 ```
 
@@ -57,12 +65,15 @@ src/
     types.ts          # RawCargo, CleanCargo, CargoFilters, etc.
     limits.ts         # PRICE / COUNT limits, CLEAN_TIMEOUT_MS
   utils/
-    gen.ts            # data generation
-    clean.ts          # cleaning logic + timeout + unique id check
-    filter.ts         # O(n) filtering
-    dirty.ts          # dirty field detection
-    random.ts         # uuidv4, randomAlnum, pick
-    number.ts         # parseNumStrict helper
+    cargo/
+      builder.ts            # data generation
+      sanitizer.ts          # cleaning logic + timeout + unique id check
+      validator.ts          # dirty field detection
+    query/ 
+      filter.ts         # O(n) filtering
+    shared/
+      random.ts         # uuidv4, randomAlnum, pick
+      number.ts         # parseNumStrict helper
   state/
     types.ts          # store types (DatasetState/Actions/Stats)
     store.ts          # zustand store
@@ -70,9 +81,12 @@ src/
     useCreateForm.ts  # CreateScreen form state & validation
     useListView.ts    # ListScreen filter logic
   ui/
+    theme/
     components/
       Chip.tsx
-    ErrorBoundary.tsx
+      ErrorBoundary.tsx
+      Icon.tsx
+      StatusBadge.tsx
   screens/
     CreateScreen.tsx
     ListScreen.tsx
@@ -145,7 +159,7 @@ interface CleanCargo {
 
 ## Data Generation Algorithm
 
-File: `utils/gen.ts`
+File: `utils/cargo/builder.ts`
 
 - Inputs: categories, weightBuckets, statuses, priceMin..priceMax, count
 - Validation: non-empty, min<max, count in [100..10000]
@@ -162,7 +176,7 @@ File: `utils/gen.ts`
 
 ## Cleaning Strategy
 
-File: `utils/clean.ts`
+File: `utils/cargo/sanitizer.ts`
 
 - Rules: invalid status/category, price<0, kg=null, invalid/duplicate id → remove
 - Timeout: CLEAN_TIMEOUT_MS → throw error
@@ -174,7 +188,7 @@ File: `utils/clean.ts`
 
 ## Filtering & Search Algorithm
 
-File: `utils/filter.ts`
+File: `utils/query/filter.ts`
 
 - Category filter with Set (O(1))
 - Bucket filter: parse min/max, range check
@@ -216,17 +230,46 @@ File: `screens/DetailScreen.tsx`
 
 ## Performance Measurements
 
-| Records | Generation (ms) | Cleaning (ms) | List Render (ms) |            Device           |
-|--------:|----------------:|--------------:|-----------------:|-----------------------------|
-| 1.000   |       10        |         3     |           1       |   iPhone 16 Plus(Simulator) |
-| 5.000   |       48    |         14    |                 1 |   iPhone 16 Plus(Simulator)    |
-| 10.000  |       78      |          25     |               2   |      iPhone 16 Plus(Simulator)  |
+> **Methodology**  
+> - **Generation / Cleaning:** measured via in-app timers (`generationDurationMs`, `cleanDurationMs`)  
+> - **List Render:** measured with RN `onContentSizeChange` deltas  
+> - **FPS / RAM:** React Native Dev Menu → **Performance Monitor** (iOS) & `adb shell dumpsys meminfo` (Android)  
 
-| Records | Generation (ms) | Cleaning (ms) | List Render (ms) |            Device           |
+---
+
+### iOS (Simulator – iPhone 16 Plus)
+- Dataset: **10,000 records**
+- Scroll test (top → bottom)  
+  - **RAM:** ~177 MB  
+  - **UI FPS:** ~60  
+  - **JS FPS:** ~59  
+
+---
+
+### Android (Emulator – Pixel 8)
+- Dataset: **10,000 records**
+- Scroll test (top → bottom)  
+  - **UI FPS:** ~60  
+  - **Java Heap:** ~22 MB  
+  - **Native Heap:** ~132 MB  
+  - **Private Other:** ~41 MB  
+  - **TOTAL PSS:** ~308 MB  
+
+---
+
+### Timing Benchmarks
+
+| Records | Generation (ms) | Cleaning (ms) | List Render (ms) | Device |
 |--------:|----------------:|--------------:|-----------------:|-----------------------------|
-| 1.000   |       14    |         2     |          4        |   Pixel 8(Simulator) |
-| 5.000   |       64    |         31    |                7  |   Pixel 8(Simulator)    |
-| 10.000  |       73      |          43     |             10     |      Pixel 8(Simulator)  |
+| 1,000   | 10              | 3             | 1                | iPhone 16 Plus (Simulator)  |
+| 5,000   | 48              | 14            | 1                | iPhone 16 Plus (Simulator)  |
+| 10,000  | 78              | 25            | 2                | iPhone 16 Plus (Simulator)  |
+
+| Records | Generation (ms) | Cleaning (ms) | List Render (ms) | Device |
+|--------:|----------------:|--------------:|-----------------:|-----------------------------|
+| 1,000   | 14              | 2             | 4                | Pixel 8 (Emulator)          |
+| 5,000   | 64              | 31            | 7                | Pixel 8 (Emulator)          |
+| 10,000  | 73              | 43            | 10               | Pixel 8 (Emulator)          |
 
 ---
 
