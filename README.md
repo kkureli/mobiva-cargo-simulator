@@ -50,7 +50,7 @@ npx react-native run-ios
 
 **ErrorBoundary** fallback is visible in **release builds** (RedBox dominates in dev mode):
 ```bash
-npx react-native run-android --variant release
+npx react-native run-android --mode=release
 npx react-native run-ios --configuration Release
 ```
 
@@ -65,12 +65,15 @@ src/
     types.ts          # RawCargo, CleanCargo, CargoFilters, etc.
     limits.ts         # PRICE / COUNT limits, CLEAN_TIMEOUT_MS
   utils/
-    gen.ts            # data generation
-    clean.ts          # cleaning logic + timeout + unique id check
-    filter.ts         # O(n) filtering
-    dirty.ts          # dirty field detection
-    random.ts         # uuidv4, randomAlnum, pick
-    number.ts         # parseNumStrict helper
+    cargo/
+      builder.ts            # data generation
+      sanitizer.ts          # cleaning logic + timeout + unique id check
+      validator.ts          # dirty field detection
+    query/ 
+      filter.ts         # O(n) filtering
+    shared/
+      random.ts         # uuidv4, randomAlnum, pick
+      number.ts         # parseNumStrict helper
   state/
     types.ts          # store types (DatasetState/Actions/Stats)
     store.ts          # zustand store
@@ -81,7 +84,9 @@ src/
     theme/
     components/
       Chip.tsx
-    ErrorBoundary.tsx
+      ErrorBoundary.tsx
+      Icon.tsx
+      StatusBadge.tsx
   screens/
     CreateScreen.tsx
     ListScreen.tsx
@@ -154,7 +159,7 @@ interface CleanCargo {
 
 ## Data Generation Algorithm
 
-File: `utils/gen.ts`
+File: `utils/cargo/builder.ts`
 
 - Inputs: categories, weightBuckets, statuses, priceMin..priceMax, count
 - Validation: non-empty, min<max, count in [100..10000]
@@ -171,7 +176,7 @@ File: `utils/gen.ts`
 
 ## Cleaning Strategy
 
-File: `utils/clean.ts`
+File: `utils/cargo/sanitizer.ts`
 
 - Rules: invalid status/category, price<0, kg=null, invalid/duplicate id → remove
 - Timeout: CLEAN_TIMEOUT_MS → throw error
@@ -183,7 +188,7 @@ File: `utils/clean.ts`
 
 ## Filtering & Search Algorithm
 
-File: `utils/filter.ts`
+File: `utils/query/filter.ts`
 
 - Category filter with Set (O(1))
 - Bucket filter: parse min/max, range check
