@@ -1,5 +1,5 @@
-import { RawCargo } from '../models/types';
-import { Category, Status, STATUSES, WeightBucket } from '../models/constants';
+import { Category, RawCargo, Status, WeightBucket } from '../models/types';
+import { STATUSES } from '../models/constants';
 import { uuidv4, randomAlnum, pick } from './random';
 
 export type GenParams = {

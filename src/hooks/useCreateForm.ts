@@ -6,8 +6,8 @@ import {
   COUNT_MIN_LIMIT,
   COUNT_MAX_LIMIT,
 } from '../models/limits';
-import type { Category, Status, WeightBucket } from '../models/constants';
 import { parseNumStrict } from '../utils/number';
+import { Category, Status, WeightBucket } from '../models/types';
 
 export function useCreateForm() {
   const generate = useDatasetStore(s => s.generate);

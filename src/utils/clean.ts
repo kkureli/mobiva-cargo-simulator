@@ -1,5 +1,5 @@
-import { CleanCargo, RawCargo } from '../models/types';
-import { CATEGORIES, Status, STATUSES } from '../models/constants';
+import { CleanCargo, RawCargo, Status } from '../models/types';
+import { CATEGORIES, STATUSES } from '../models/constants';
 
 const catSet = new Set(CATEGORIES);
 const statusSet = new Set(STATUSES);
