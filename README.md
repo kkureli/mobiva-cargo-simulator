@@ -230,17 +230,46 @@ File: `screens/DetailScreen.tsx`
 
 ## Performance Measurements
 
-| Records | Generation (ms) | Cleaning (ms) | List Render (ms) |            Device           |
-|--------:|----------------:|--------------:|-----------------:|-----------------------------|
-| 1.000   |       10        |         3     |           1       |   iPhone 16 Plus(Simulator) |
-| 5.000   |       48    |         14    |                 1 |   iPhone 16 Plus(Simulator)    |
-| 10.000  |       78      |          25     |               2   |      iPhone 16 Plus(Simulator)  |
+> **Methodology**  
+> - **Generation / Cleaning:** measured via in-app timers (`generationDurationMs`, `cleanDurationMs`)  
+> - **List Render:** measured with RN `onContentSizeChange` deltas  
+> - **FPS / RAM:** React Native Dev Menu → **Performance Monitor** (iOS) & `adb shell dumpsys meminfo` (Android)  
 
-| Records | Generation (ms) | Cleaning (ms) | List Render (ms) |            Device           |
+---
+
+### iOS (Simulator – iPhone 16 Plus)
+- Dataset: **10,000 records**
+- Scroll test (top → bottom)  
+  - **RAM:** ~177 MB  
+  - **UI FPS:** ~60  
+  - **JS FPS:** ~59  
+
+---
+
+### Android (Emulator – Pixel 8)
+- Dataset: **10,000 records**
+- Scroll test (top → bottom)  
+  - **UI FPS:** ~60  
+  - **Java Heap:** ~22 MB  
+  - **Native Heap:** ~132 MB  
+  - **Private Other:** ~41 MB  
+  - **TOTAL PSS:** ~308 MB  
+
+---
+
+### Timing Benchmarks
+
+| Records | Generation (ms) | Cleaning (ms) | List Render (ms) | Device |
 |--------:|----------------:|--------------:|-----------------:|-----------------------------|
-| 1.000   |       14    |         2     |          4        |   Pixel 8(Simulator) |
-| 5.000   |       64    |         31    |                7  |   Pixel 8(Simulator)    |
-| 10.000  |       73      |          43     |             10     |      Pixel 8(Simulator)  |
+| 1,000   | 10              | 3             | 1                | iPhone 16 Plus (Simulator)  |
+| 5,000   | 48              | 14            | 1                | iPhone 16 Plus (Simulator)  |
+| 10,000  | 78              | 25            | 2                | iPhone 16 Plus (Simulator)  |
+
+| Records | Generation (ms) | Cleaning (ms) | List Render (ms) | Device |
+|--------:|----------------:|--------------:|-----------------:|-----------------------------|
+| 1,000   | 14              | 2             | 4                | Pixel 8 (Emulator)          |
+| 5,000   | 64              | 31            | 7                | Pixel 8 (Emulator)          |
+| 10,000  | 73              | 43            | 10               | Pixel 8 (Emulator)          |
 
 ---
 
