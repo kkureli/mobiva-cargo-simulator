@@ -15,6 +15,8 @@ import { useNavigation } from '@react-navigation/native';
 import { PRICE_MAX_LIMIT, PRICE_MIN_LIMIT } from '../models/limits';
 import type { RawCargo, CleanCargo } from '../models/types';
 import { useRenderTimer } from '../hooks/useRenderTimer';
+import theme from '../ui/theme';
+import StatusBadge from '../ui/components/StatusBadge';
 
 type ListItemData = RawCargo | CleanCargo;
 
@@ -98,24 +100,28 @@ const MemoListItem = React.memo(function ListItem({
   item,
   onPress,
   dirty,
-}: {
-  item: ListItemData;
-  onPress: () => void;
-  dirty: boolean;
-}) {
+}: any) {
   return (
     <Pressable
       onPress={onPress}
-      style={[styles.card, dirty ? styles.cardDirty : styles.cardClean]}
+      style={[
+        styles.card,
+        dirty ? styles.cardDirty : styles.cardClean,
+        theme.shadow.ios,
+        theme.shadow.android,
+      ]}
     >
-      <Text style={styles.title}>{item.name}</Text>
-      <Text>{item.category}</Text>
-      <Text>kg: {item.kg ?? '-'}</Text>
-      <Text>price: {item.price}</Text>
-      <Text>
-        status:{' '}
-        {String((item as RawCargo).status ?? (item as CleanCargo).status)}
-      </Text>
+      <View style={styles.cardHeader}>
+        <Text style={styles.title} numberOfLines={1}>
+          {item.name}
+        </Text>
+        {item.status ? <StatusBadge value={String(item.status)} /> : null}
+      </View>
+      <View style={styles.rowBetween}>
+        <Text style={styles.sub}>{item.category}</Text>
+        <Text style={styles.sub}>kg: {item.kg ?? '-'}</Text>
+      </View>
+      <Text style={styles.price}>₺ {item.price}</Text>
     </Pressable>
   );
 });
@@ -142,7 +148,6 @@ export default function ListScreen() {
 
   return (
     <View style={styles.wrap}>
-      <Text style={styles.h1}>List</Text>
       <Text style={styles.meta}>
         Total: {counts.totalCount} • Result: {counts.resultCount} • Mode:{' '}
         {isCleanMode ? 'Clean' : 'Raw'}
@@ -167,31 +172,75 @@ export default function ListScreen() {
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, padding: 16 },
-  h1: { fontSize: 22, fontWeight: '700', marginBottom: 8 },
-  label: { marginTop: 12, marginBottom: 6, fontWeight: '600' },
+  wrap: { flex: 1, padding: theme.space.lg, backgroundColor: theme.color.bg },
+  h1: {
+    fontSize: theme.font.h1,
+    fontWeight: '700',
+    marginBottom: theme.space.sm,
+    color: theme.color.text,
+  },
+  label: {
+    marginTop: theme.space.md,
+    marginBottom: theme.space.xs,
+    fontWeight: '600',
+    color: theme.color.text,
+  },
   row: { flexDirection: 'row', flexWrap: 'wrap' },
-  inline: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  inline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: theme.space.sm,
+  },
   input: {
     borderWidth: 1,
-    borderColor: '#d0d7de',
-    borderRadius: 8,
-    padding: 8,
+    borderColor: theme.color.border,
+    borderRadius: theme.radius.md,
+    padding: theme.space.sm,
     minWidth: 100,
+    color: theme.color.text,
+    backgroundColor: theme.color.card,
   },
-  meta: { marginBottom: 8, color: '#57606a' },
-  card: { borderWidth: 1, borderRadius: 10, padding: 12, marginTop: 8 },
-  cardDirty: { borderColor: '#d14343', backgroundColor: '#fde8e8' },
-  cardClean: { borderColor: '#d0d7de', backgroundColor: '#fff' },
-  title: { fontWeight: '700', marginBottom: 4 },
-  errorContainer: {
-    backgroundColor: '#fde8e8',
-    borderColor: '#d14343',
+  meta: { marginBottom: theme.space.sm, color: theme.color.sub },
+  card: {
     borderWidth: 1,
-    borderRadius: 8,
-    padding: 8,
-    marginBottom: 8,
+    borderRadius: theme.radius.lg,
+    padding: theme.space.md,
+    marginTop: theme.space.sm,
   },
-  hint: { color: '#57606a', marginTop: 4 },
-  muted: { color: '#57606a' },
+  cardDirty: {
+    borderColor: theme.color.dirtyBorder,
+    backgroundColor: theme.color.dirtyBg,
+  },
+  cardClean: {
+    borderColor: theme.color.border,
+    backgroundColor: theme.color.card,
+  },
+  title: {
+    fontWeight: '700',
+    marginBottom: theme.space.xs,
+    color: theme.color.text,
+    flex: 1,
+  },
+  sub: { color: theme.color.sub, fontSize: theme.font.sm },
+  price: {
+    color: theme.color.text,
+    marginTop: theme.space.xs,
+    fontWeight: '600',
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  rowBetween: { flexDirection: 'row', justifyContent: 'space-between' },
+  errorContainer: {
+    backgroundColor: theme.color.dirtyBg,
+    borderColor: theme.color.dirtyBorder,
+    borderWidth: 1,
+    borderRadius: theme.radius.md,
+    padding: theme.space.sm,
+    marginBottom: theme.space.sm,
+  },
+  hint: { color: theme.color.sub, marginTop: theme.space.xs },
+  muted: { color: theme.color.sub },
 });

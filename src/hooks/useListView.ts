@@ -4,8 +4,8 @@ import { filterCargoList } from '../utils/filter';
 import { CATEGORIES, WEIGHT_BUCKETS } from '../models/constants';
 import { PRICE_MIN_LIMIT, PRICE_MAX_LIMIT } from '../models/limits';
 import { InteractionManager } from 'react-native';
-import type { Category, WeightBucket } from '../models/constants';
 import { parseNumStrict } from '../utils/number';
+import { Category, WeightBucket } from '../models/types';
 
 export function useListView() {
   const raw = useDatasetStore(s => s.raw);

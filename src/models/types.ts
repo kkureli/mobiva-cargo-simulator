@@ -1,4 +1,8 @@
-import type { Status, Category, WeightBucket } from './constants';
+import { CATEGORIES, STATUSES, WEIGHT_BUCKETS } from './constants';
+
+export type WeightBucket = (typeof WEIGHT_BUCKETS)[number];
+export type Category = (typeof CATEGORIES)[number];
+export type Status = (typeof STATUSES)[number];
 
 export interface CargoFilters {
   categories: Category[];
@@ -10,19 +14,19 @@ export interface CargoFilters {
 
 export interface RawCargo {
   id: string;
-  name: string; // 8-16 alphanumeric
+  name: string;
   category: Category;
-  price: number; // negatif olabilir
-  status: Status | null; // %5 null
-  kg: number | null; // %10 null
-  createdAt: number; // epoch ms
+  price: number;
+  status: Status | null;
+  kg: number | null;
+  createdAt: number;
 }
 
 export interface CleanCargo {
   id: string;
   name: string;
   category: Category;
-  price: number; // >= 0
+  price: number;
   status: Status;
   kg: number;
   createdAt: number;

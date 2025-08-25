@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, Text, StyleSheet, ViewStyle } from 'react-native';
+import { theme } from '../theme/theme';
 
 type Props = {
   label: string;
@@ -28,13 +29,16 @@ const styles = StyleSheet.create({
   base: {
     paddingVertical: 8,
     paddingHorizontal: 12,
-    borderRadius: 16,
-    marginRight: 8,
-    marginBottom: 8,
+    borderRadius: theme.radius.lg,
+    marginRight: theme.space.sm,
+    marginBottom: theme.space.sm,
     borderWidth: 1,
   },
-  sel: { backgroundColor: '#1f6feb', borderColor: '#1f6feb' },
-  un: { backgroundColor: '#fff', borderColor: '#d0d7de' },
+  sel: {
+    backgroundColor: theme.color.chipSel,
+    borderColor: theme.color.chipSel,
+  },
+  un: { backgroundColor: theme.color.chipBg, borderColor: theme.color.border },
   selText: { color: '#fff' },
-  unText: { color: '#24292f' },
+  unText: { color: theme.color.text },
 });

@@ -1,5 +1,5 @@
-import { CleanCargo, RawCargo } from '../models/types';
-import { CATEGORIES, Status, STATUSES } from '../models/constants';
+import { CleanCargo, RawCargo, Status } from '../models/types';
+import { CATEGORIES, STATUSES } from '../models/constants';
 
 const catSet = new Set(CATEGORIES);
 const statusSet = new Set(STATUSES);
@@ -17,15 +17,15 @@ export function clean(
   rows: RawCargo[],
   opts?: { timeoutMs?: number },
 ): CleanResult {
-  const out: CleanCargo[] = [];
-  const t0 = Date.now();
-  const timeout = opts?.timeoutMs ?? 2000;
+  const cleaned: CleanCargo[] = [];
+  const startedAt = Date.now();
+  const timeLimit = opts?.timeoutMs ?? 2000;
   let removed = 0;
   const seenIds = new Set<string>();
 
   for (let i = 0; i < rows.length; i++) {
-    if (Date.now() - t0 > timeout) {
-      throw new Error('TIMEOUT: Temizleme işlemi zaman aşımına uğradı');
+    if (Date.now() - startedAt > timeLimit) {
+      throw new Error('Temizleme süresi limitini aştı');
     }
 
     const r = rows[i];
@@ -53,7 +53,7 @@ export function clean(
 
     seenIds.add(r.id);
 
-    out.push({
+    cleaned.push({
       id: r.id,
       name: r.name,
       category: r.category,
@@ -64,11 +64,11 @@ export function clean(
     });
   }
 
-  const t1 = Date.now();
+  const endedAt = Date.now();
   return {
-    rows: out,
+    rows: cleaned,
     removedCount: removed,
-    remainingCount: out.length,
-    cleanDurationMs: t1 - t0,
+    remainingCount: cleaned.length,
+    cleanDurationMs: endedAt - startedAt,
   };
 }

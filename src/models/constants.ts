@@ -26,6 +26,3 @@ export const CATEGORIES = [
   'toys',
   'sports',
 ] as const;
-export type WeightBucket = (typeof WEIGHT_BUCKETS)[number];
-export type Category = (typeof CATEGORIES)[number];
-export type Status = (typeof STATUSES)[number];

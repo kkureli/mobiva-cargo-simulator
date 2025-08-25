@@ -1,6 +1,8 @@
-import { RawCargo } from '../models/types';
-import { Category, Status, STATUSES, WeightBucket } from '../models/constants';
+import { Category, RawCargo, Status, WeightBucket } from '../models/types';
+import { STATUSES } from '../models/constants';
 import { uuidv4, randomAlnum, pick } from './random';
+const NULL_STATUS_RATIO = 0.05;
+const NULL_KG_RATIO = 0.1;
 
 export type GenParams = {
   categories: Category[];
@@ -11,63 +13,71 @@ export type GenParams = {
   count: number;
 };
 
-function randomFromBucket(bucket: string): number {
-  const [minS, maxS] = bucket.split('-');
-  const min = Number(minS);
-  const max = Number(maxS);
+function kgFromBucket(bucket: WeightBucket): number {
+  const [minStr, maxStr] = bucket.split('-');
+  const min = Number(minStr);
+  const max = Number(maxStr);
   return min + Math.random() * (max - min);
 }
 
-function pickUniqueIndices(n: number, k: number): Set<number> {
-  const chosen = new Set<number>();
-  if (k <= 0) return chosen;
-  if (k >= n) {
-    for (let i = 0; i < n; i++) chosen.add(i);
-    return chosen;
+function pickRandomIndexes(total: number, count: number): Set<number> {
+  const result = new Set<number>();
+
+  if (count <= 0) return result;
+
+  if (count >= total) {
+    for (let i = 0; i < total; i++) result.add(i);
+    return result;
   }
-  while (chosen.size < k) chosen.add((Math.random() * n) | 0);
-  return chosen;
+
+  while (result.size < count) {
+    const randomIndex = (Math.random() * total) | 0;
+    result.add(randomIndex);
+  }
+
+  return result;
 }
 
 export function generateRaw(params: GenParams) {
   const { categories, weightBuckets, statuses, priceMin, priceMax, count } =
     params;
 
-  if (!categories.length) throw new Error('Categories boş');
-  if (!weightBuckets.length) throw new Error('weightBuckets boş');
+  if (!categories.length) throw new Error('Kategori listesi boş olamaz.');
+  if (!weightBuckets.length) throw new Error('Weight bucket seçilmedi.');
   if (
     !Number.isFinite(priceMin) ||
     !Number.isFinite(priceMax) ||
     priceMin >= priceMax
   )
-    throw new Error('Price aralığı geçersiz');
+    throw new Error('Geçersiz fiyat aralığı.');
   if (!Number.isFinite(count) || count < 1 || count > 10000)
-    throw new Error('Count 1 - 10000 arası olmalı');
+    throw new Error('Adet 1 ile 10000 arasında olmalı.');
   if (count > 10000) {
     throw new Error(
       'OUT_OF_MEMORY: Bellek yetersiz, 10000 satırdan fazla üretilemez',
     );
   }
+
   const rows: RawCargo[] = new Array(count);
 
-  const nullStatusTarget = Math.floor(count * 0.05);
-  const nullKgTarget = Math.floor(count * 0.1);
+  const targetNullStatusCount = Math.floor(count * NULL_STATUS_RATIO);
+  const targetNullKgCount = Math.floor(count * NULL_KG_RATIO);
 
-  let negTarget = 0;
+  let targetNegativeCount = 0;
   if (priceMin < 0) {
     const negSpan = Math.min(0, priceMax) - priceMin;
     const totalSpan = priceMax - priceMin;
     const ratio =
       totalSpan > 0 ? Math.max(0, Math.min(1, negSpan / totalSpan)) : 0;
-    negTarget = Math.floor(count * ratio);
+    targetNegativeCount = Math.floor(count * ratio);
   }
 
-  const nullStatusIdx = pickUniqueIndices(count, nullStatusTarget);
-  const nullKgIdx = pickUniqueIndices(count, nullKgTarget);
-  const negPriceIdx = pickUniqueIndices(count, negTarget);
+  const nullStatusIndexes = pickRandomIndexes(count, targetNullStatusCount);
+  const nullKgIndexes = pickRandomIndexes(count, targetNullKgCount);
+  const negativePriceIndexes = pickRandomIndexes(count, targetNegativeCount);
 
-  const tStart = Date.now();
-  const pool = statuses.length ? statuses : (STATUSES as unknown as Status[]);
+  const startedAt = Date.now();
+  const statusPool: Status[] = statuses.length ? statuses : [...STATUSES];
 
   for (let i = 0; i < count; i++) {
     const id = uuidv4();
@@ -75,26 +85,26 @@ export function generateRaw(params: GenParams) {
     const category = pick(categories);
 
     let price: number;
-    if (negPriceIdx.has(i)) {
-      const negMax = Math.min(priceMax, 0);
-      price = priceMin + Math.random() * (negMax - priceMin);
+    if (negativePriceIndexes.has(i)) {
+      const maxNeg = Math.min(priceMax, 0);
+      price = priceMin + Math.random() * (maxNeg - priceMin);
     } else {
-      const nonNegMin = Math.max(priceMin, 0);
-      price = nonNegMin + Math.random() * (priceMax - nonNegMin);
+      const minNonNeg = Math.max(priceMin, 0);
+      price = minNonNeg + Math.random() * (priceMax - minNonNeg);
     }
 
     let kg: number | null;
-    if (nullKgIdx.has(i)) {
+    if (nullKgIndexes.has(i)) {
       kg = null;
     } else {
-      kg = randomFromBucket(pick(weightBuckets));
+      kg = kgFromBucket(pick(weightBuckets));
     }
 
     let status: Status | null;
-    if (nullStatusIdx.has(i)) {
+    if (nullStatusIndexes.has(i)) {
       status = null;
     } else {
-      status = pick(pool);
+      status = pick(statusPool);
     }
 
     rows[i] = {
@@ -108,18 +118,18 @@ export function generateRaw(params: GenParams) {
     };
   }
 
-  const tEnd = Date.now();
+  const endedAt = Date.now();
 
   return {
     rows,
     stats: {
       generatedCount: count,
-      nullStatusCount: nullStatusTarget,
-      nullKgCount: nullKgTarget,
-      negativePriceCount: negTarget,
-      generationStartAt: tStart,
-      generationEndAt: tEnd,
-      generationDurationMs: tEnd - tStart,
+      nullStatusCount: targetNullStatusCount,
+      nullKgCount: targetNullKgCount,
+      negativePriceCount: targetNegativeCount,
+      generationStartAt: startedAt,
+      generationEndAt: endedAt,
+      generationDurationMs: endedAt - startedAt,
     },
   };
 }
