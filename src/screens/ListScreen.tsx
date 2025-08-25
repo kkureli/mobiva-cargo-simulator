@@ -7,6 +7,7 @@ import {
   FlatList,
   Pressable,
   StyleSheet,
+  Image,
 } from 'react-native';
 import Chip from '../ui/components/Chip';
 import { useListView } from '../hooks/useListView';
@@ -111,17 +112,22 @@ const MemoListItem = React.memo(function ListItem({
         theme.shadow.android,
       ]}
     >
-      <View style={styles.cardHeader}>
-        <Text style={styles.title} numberOfLines={1}>
-          {item.name}
-        </Text>
-        {item.status ? <StatusBadge value={String(item.status)} /> : null}
+      <View>
+        {item.imageUrl ? (
+          <Image source={{ uri: item.imageUrl }} style={styles.img} />
+        ) : null}
+        <View style={styles.cardHeader}>
+          <Text style={styles.title} numberOfLines={1}>
+            {item.name}
+          </Text>
+          {item.status ? <StatusBadge value={String(item.status)} /> : null}
+        </View>
+        <View style={styles.rowBetween}>
+          <Text style={styles.sub}>{item.category}</Text>
+          <Text style={styles.sub}>kg: {item.kg ?? '-'}</Text>
+        </View>
+        <Text style={styles.price}>₺ {item.price}</Text>
       </View>
-      <View style={styles.rowBetween}>
-        <Text style={styles.sub}>{item.category}</Text>
-        <Text style={styles.sub}>kg: {item.kg ?? '-'}</Text>
-      </View>
-      <Text style={styles.price}>₺ {item.price}</Text>
     </Pressable>
   );
 });
@@ -243,4 +249,5 @@ const styles = StyleSheet.create({
   },
   hint: { color: theme.color.sub, marginTop: theme.space.xs },
   muted: { color: theme.color.sub },
+  img: { width: 56, height: 56, borderRadius: 8, marginBottom: 6 },
 });
