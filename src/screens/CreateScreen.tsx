@@ -105,7 +105,7 @@ export default function CreateScreen() {
         </View>
       )}
 
-      <View style={styles.inline}>
+      <View style={[styles.inline, styles.buttonsGap]}>
         <View style={styles.buttons}>
           <Button
             title="🚀 Create"
@@ -198,6 +198,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.color.card,
   },
   buttons: { marginTop: theme.space.md },
+  buttonsGap: { gap: theme.space.md },
   box: {
     borderWidth: 1,
     borderColor: theme.color.border,

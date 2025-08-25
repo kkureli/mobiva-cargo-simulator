@@ -8,6 +8,7 @@ import {
   Pressable,
   StyleSheet,
   Image,
+  Platform,
 } from 'react-native';
 import Chip from '../ui/components/Chip';
 import { useListView } from '../hooks/useListView';
@@ -196,6 +197,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: theme.space.sm,
+    marginTop: Platform.OS === 'android' ? theme.space.lg : theme.space.xs,
   },
   input: {
     borderWidth: 1,
