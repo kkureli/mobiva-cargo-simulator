@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react';
 import { useDatasetStore } from '../state/store';
-import { filterCargoList } from '../utils/filter';
 import { CATEGORIES, WEIGHT_BUCKETS } from '../models/constants';
 import { PRICE_MIN_LIMIT, PRICE_MAX_LIMIT } from '../models/limits';
 import { InteractionManager } from 'react-native';
-import { parseNumStrict } from '../utils/number';
+import { parseNumStrict } from '../utils/shared/number';
 import { Category, WeightBucket } from '../models/types';
+import { filterCargoList } from '../utils/query/filter';
 
 export function useListView() {
   const raw = useDatasetStore(s => s.raw);
