@@ -1,6 +1,6 @@
-import { Category, RawCargo, Status, WeightBucket } from '../models/types';
-import { STATUSES } from '../models/constants';
-import { uuidv4, randomAlnum, pick } from './random';
+import { Category, RawCargo, Status, WeightBucket } from '../../models/types';
+import { STATUSES } from '../../models/constants';
+import { uuidv4, randomAlnum, pick } from '../shared/random';
 const NULL_STATUS_RATIO = 0.05;
 const NULL_KG_RATIO = 0.1;
 
@@ -38,7 +38,7 @@ function pickRandomIndexes(total: number, count: number): Set<number> {
   return result;
 }
 
-export function generateRaw(params: GenParams) {
+export function createCargoDataset(params: GenParams) {
   const { categories, weightBuckets, statuses, priceMin, priceMax, count } =
     params;
 

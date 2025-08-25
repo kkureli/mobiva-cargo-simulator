@@ -6,7 +6,7 @@ import {
   COUNT_MIN_LIMIT,
   COUNT_MAX_LIMIT,
 } from '../models/limits';
-import { parseNumStrict } from '../utils/number';
+import { parseNumStrict } from '../utils/shared/number';
 import { Category, Status, WeightBucket } from '../models/types';
 
 export function useCreateForm() {

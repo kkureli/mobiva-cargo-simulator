@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import Chip from '../ui/components/Chip';
 import { useListView } from '../hooks/useListView';
-import { isRawDirty } from '../utils/dirty';
+import { isRawDirty } from '../utils/cargo/validator';
 import { useNavigation } from '@react-navigation/native';
 import { PRICE_MAX_LIMIT, PRICE_MIN_LIMIT } from '../models/limits';
 import type { RawCargo, CleanCargo } from '../models/types';

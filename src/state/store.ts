@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { DatasetStore } from './types';
-import { generateRaw } from '../utils/gen';
-import { clean as runClean } from '../utils/clean';
+import { createCargoDataset } from '../utils/cargo/builder';
+import { clean as runClean } from '../utils/cargo/sanitizer';
 import { CATEGORIES, WEIGHT_BUCKETS, STATUSES } from '../models/constants';
 import { CLEAN_TIMEOUT_MS } from '../models/limits';
 import { CargoFilters } from '../models/types';
@@ -27,7 +27,7 @@ export const useDatasetStore = create<DatasetStore>((set, get) => ({
   generate: params => {
     try {
       set({ isGenerating: true, error: null });
-      const res = generateRaw({
+      const res = createCargoDataset({
         categories: params.categories.length
           ? params.categories
           : (CATEGORIES as any),

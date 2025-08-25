@@ -3,7 +3,7 @@ import {
   Category,
   RawCargo,
   WeightBucket,
-} from '../models/types';
+} from '../../models/types';
 
 function parseBucket(bucket: WeightBucket): [number, number] {
   const [minStr, maxStr] = bucket.split('-');
