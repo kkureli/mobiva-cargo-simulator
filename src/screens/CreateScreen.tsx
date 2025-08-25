@@ -10,14 +10,13 @@ import {
 import Chip from '../ui/components/Chip';
 import { CATEGORIES, WEIGHT_BUCKETS, STATUSES } from '../models/constants';
 import { useCreateForm } from '../hooks/useCreateForm';
+import theme from '../ui/theme';
 
 export default function CreateScreen() {
   const { state, actions, limits } = useCreateForm();
 
   return (
     <ScrollView contentContainerStyle={styles.wrap}>
-      <Text style={styles.h1}>Create Data</Text>
-
       {state.error ? (
         <View style={styles.errorBox}>
           <Text style={styles.err}>{state.error}</Text>
@@ -167,36 +166,54 @@ export default function CreateScreen() {
 }
 
 const styles = StyleSheet.create({
-  wrap: { padding: 16 },
-  h1: { fontSize: 22, fontWeight: '700', marginBottom: 12 },
-  h2: { fontSize: 18, fontWeight: '600', marginTop: 16, marginBottom: 8 },
-  label: { marginTop: 12, marginBottom: 6, fontWeight: '600' },
+  wrap: { padding: theme.space.lg, backgroundColor: theme.color.bg },
+  h1: {
+    fontSize: theme.font.h1,
+    fontWeight: '700',
+    marginBottom: theme.space.md,
+    color: theme.color.text,
+  },
+  h2: {
+    fontSize: theme.font.h2,
+    fontWeight: '600',
+    marginTop: theme.space.lg,
+    marginBottom: theme.space.sm,
+    color: theme.color.text,
+  },
+  label: {
+    marginTop: theme.space.md,
+    marginBottom: theme.space.xs,
+    fontWeight: '600',
+    color: theme.color.text,
+  },
   row: { flexDirection: 'row', flexWrap: 'wrap' },
   inline: { flexDirection: 'row', alignItems: 'center' },
   input: {
     borderWidth: 1,
-    borderColor: '#d0d7de',
-    borderRadius: 8,
-    padding: 8,
+    borderColor: theme.color.border,
+    borderRadius: theme.radius.md,
+    padding: theme.space.sm,
     minWidth: 120,
+    color: theme.color.text,
+    backgroundColor: theme.color.card,
   },
-  buttons: { marginTop: 12 },
+  buttons: { marginTop: theme.space.md },
   box: {
     borderWidth: 1,
-    borderColor: '#d0d7de',
-    borderRadius: 8,
-    padding: 12,
-    backgroundColor: '#f6f8fa',
+    borderColor: theme.color.border,
+    borderRadius: theme.radius.md,
+    padding: theme.space.md,
+    backgroundColor: theme.color.card,
   },
-  hint: { color: '#57606a', marginTop: 4 },
+  hint: { color: theme.color.sub, marginTop: theme.space.xs },
   errorBox: {
-    backgroundColor: '#fde8e8',
-    borderColor: '#d14343',
+    backgroundColor: theme.color.dirtyBg,
+    borderColor: theme.color.dirtyBorder,
     borderWidth: 1,
-    borderRadius: 8,
-    padding: 8,
-    marginTop: 16,
+    borderRadius: theme.radius.md,
+    padding: theme.space.sm,
+    marginTop: theme.space.md,
   },
-  err: { color: '#b42318' },
-  muted: { color: '#57606a' },
+  err: { color: theme.color.danger },
+  muted: { color: theme.color.sub },
 });

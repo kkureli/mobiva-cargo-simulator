@@ -14,7 +14,18 @@ const Tab = createBottomTabNavigator<RootTabParamList>();
 export default function AppNavigator() {
   return (
     <NavigationContainer>
-      <Tab.Navigator screenOptions={{ headerShown: false, lazy: true }}>
+      <Tab.Navigator
+        screenOptions={{
+          headerShown: false,
+          lazy: true,
+          tabBarStyle: {
+            backgroundColor: '#ffffff',
+            borderTopColor: '#e5e7eb',
+          },
+          tabBarActiveTintColor: '#111827',
+          tabBarInactiveTintColor: '#6b7280',
+        }}
+      >
         <Tab.Screen
           name="CreateTab"
           component={CreateStack}
