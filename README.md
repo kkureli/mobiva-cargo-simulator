@@ -1,97 +1,243 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Mobiva Cargo Simulator (React Native + TypeScript)
 
-# Getting Started
+A simulation app for cargo shipment data with full cycle: **generate → clean → list → filter → detail**.  
+State management is handled with **Zustand**, algorithms are implemented **without external libraries**
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+---
 
-## Step 1: Start Metro
+## Table of Contents
+- [Setup & Run](#setup--run)
+- [Architecture & Folder Structure](#architecture--folder-structure)
+- [Data Model](#data-model)
+- [Constants](#constants)
+- [Features & Spec Mapping](#features--spec-mapping)
+- [Data Generation Algorithm](#data-generation-algorithm)
+- [Cleaning Strategy](#cleaning-strategy)
+- [Filtering & Search Algorithm](#filtering--search-algorithm)
+- [Detail Screen & Dirty Field Highlighting](#detail-screen--dirty-field-highlighting)
+- [Error Handling](#error-handling)
+- [Performance Design](#performance-design)
+- [Performance Measurements](#performance-measurements)
+- [Commit Convention](#commit-convention)
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+---
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+## Setup & Run
 
-```sh
-# Using npm
-npm start
+```bash
+npm install
 
-# OR using Yarn
-yarn start
+# iOS first setup
+cd ios && pod install && cd ..
+
+# Metro bundler
+npx react-native start
+
+# Android
+npx react-native run-android
+
+# iOS
+npx react-native run-ios
 ```
 
-## Step 2: Build and run your app
-
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
-
-```sh
-# Using npm
-npm run android
-
-# OR using Yarn
-yarn android
+**ErrorBoundary** fallback is visible in **release builds** (RedBox dominates in dev mode):
+```bash
+npx react-native run-android --variant release
+npx react-native run-ios --configuration Release
 ```
 
-### iOS
+---
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+## Architecture & Folder Structure
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
+```
+src/
+  models/
+    constants.ts      # STATUSES, CATEGORIES, WEIGHT_BUCKETS
+    types.ts          # RawCargo, CleanCargo, CargoFilters, etc.
+    limits.ts         # PRICE / COUNT limits, CLEAN_TIMEOUT_MS
+  utils/
+    gen.ts            # data generation
+    clean.ts          # cleaning logic + timeout + unique id check
+    filter.ts         # O(n) filtering
+    dirty.ts          # dirty field detection
+    random.ts         # uuidv4, randomAlnum, pick
+    number.ts         # parseNumStrict helper
+  state/
+    types.ts          # store types (DatasetState/Actions/Stats)
+    store.ts          # zustand store
+  hooks/
+    useCreateForm.ts  # CreateScreen form state & validation
+    useListView.ts    # ListScreen filter logic
+  ui/
+    components/
+      Chip.tsx
+    ErrorBoundary.tsx
+  screens/
+    CreateScreen.tsx
+    ListScreen.tsx
+    DetailScreen.tsx
+  navigation/
+    AppNavigator.tsx
+    CreateStack.tsx
+    ListStack.tsx
+App.tsx
 ```
 
-Then, and every time you update your native dependencies, run:
+---
 
-```sh
-bundle exec pod install
+## Data Model
+
+```ts
+interface RawCargo {
+  id: string;            // UUID v4
+  name: string;          // 8–16 alphanumeric
+  category: Category;
+  price: number;         // may be negative
+  status: Status | null; // 5% null
+  kg: number | null;     // 10% null
+  createdAt: number;
+}
+
+interface CleanCargo {
+  id: string;
+  name: string;
+  category: Category;
+  price: number;         // >= 0
+  status: Status;
+  kg: number;
+  createdAt: number;
+}
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+---
 
-```sh
-# Using npm
-npm run ios
+## Constants
 
-# OR using Yarn
-yarn ios
-```
+- Status: `['PREPARING','AT_BRANCH','OUT_FOR_DELIVERY','DELIVERED','DELIVERY_FAILED']`
+- WeightBuckets: `['1-5','5-10','10-15','15-20','20-25','25-30','30-35','35-40']`
+- Categories: `['electronics','cleaning','apparel','food','books','cosmetics','homeliving','toys','sports']`
+- Limits: `PRICE_MIN_LIMIT=-100`, `PRICE_MAX_LIMIT=1000`, `COUNT_MIN_LIMIT=100`, `COUNT_MAX_LIMIT=10000`, `CLEAN_TIMEOUT_MS=2000`
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+---
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+## Features & Spec Mapping
 
-## Step 3: Modify your app
+- **CreateScreen**
+  - Multi-select: Category, WeightBuckets, Status 
+  - Price range validation 
+  - Count validation (100..10000, integer) 
+  - Generation stats: count, null status, null kg, negative price, start/end/duration 
+  - Clean stats: removed, remaining, duration 
 
-Now that you have successfully run the app, let's make changes!
+- **ListScreen**
+  - Works without cleaning, dirty items highlighted 
+  - After cleaning, only valid items 
+  - Filters: category, bucket, price, name (case-sensitive) 
+  - Apply-only filtering 
+  - Counters: total and result 
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+- **DetailScreen**
+  - Fields: id, name, category, price, status, kg, createdAt 
+  - Dirty fields highlighted (only before cleaning) 
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+---
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+## Data Generation Algorithm
 
-## Congratulations! :tada:
+File: `utils/gen.ts`
 
-You've successfully run and modified your React Native App. :partying_face:
+- Inputs: categories, weightBuckets, statuses, priceMin..priceMax, count
+- Validation: non-empty, min<max, count in [100..10000]
+- Dirty distribution:
+  - 5% status = null
+  - 10% kg = null
+  - Negative prices proportional to negative span
+- Record:
+  - uuidv4, random alnum name, random category, random price, random kg from bucket, random status, createdAt
+- Stats returned (count, null counts, negative count, timings)
+- Complexity: O(n)
 
-### Now what?
+---
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+## Cleaning Strategy
 
-# Troubleshooting
+File: `utils/clean.ts`
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+- Rules: invalid status/category, price<0, kg=null, invalid/duplicate id → remove
+- Timeout: CLEAN_TIMEOUT_MS → throw error
+- Unique ids ensured with Set
+- Result: cleaned rows, removed count, remaining count, duration
+- Complexity: O(n)
 
-# Learn More
+---
 
-To learn more about React Native, take a look at the following resources:
+## Filtering & Search Algorithm
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+File: `utils/filter.ts`
+
+- Category filter with Set (O(1))
+- Bucket filter: parse min/max, range check
+- Price min/max checks
+- Name filter: case-sensitive includes
+- Apply-only model, filters applied on button press
+- Complexity: O(n)
+
+---
+
+## Detail Screen & Dirty Field Highlighting
+
+File: `screens/DetailScreen.tsx`
+
+- Raw mode: invalid/dirty fields highlighted
+- Clean mode: all valid
+
+---
+
+## Error Handling
+
+- **Generate**: param validation, OOM guard, try/catch
+- **Clean**: timeout guard, corrupt removal
+- **List**: safe filtering with validation
+- **Search**: safe includes
+- **State**: store action try/catch, error state
+- **UI**: ErrorBoundary wrapper (class)
+
+---
+
+## Performance Design
+
+- Single-pass generation/cleaning
+- Filtering with O(n) and Set
+- FlatList tuned: initialNumToRender, windowSize, removeClippedSubviews
+- InteractionManager for smooth filter apply
+
+---
+
+## Performance Measurements
+
+| Records | Generation (ms) | Cleaning (ms) | List Render (ms) |            Device           |
+|--------:|----------------:|--------------:|-----------------:|-----------------------------|
+| 1.000   |       10        |         3     |           1       |   iPhone 16 Plus(Simulator) |
+| 5.000   |       48    |         14    |                 1 |   iPhone 16 Plus(Simulator)    |
+| 10.000  |       78      |          25     |               2   |      iPhone 16 Plus(Simulator)  |
+
+| Records | Generation (ms) | Cleaning (ms) | List Render (ms) |            Device           |
+|--------:|----------------:|--------------:|-----------------:|-----------------------------|
+| 1.000   |       14    |         2     |          4        |   Pixel 8(Simulator) |
+| 5.000   |       64    |         31    |                7  |   Pixel 8(Simulator)    |
+| 10.000  |       73      |          43     |             10     |      Pixel 8(Simulator)  |
+
+---
+
+## Commit Convention
+
+Conventional Commits:
+
+- `feat(models): add cargo types and constants`
+- `feat(utils): generator with 5% null status`
+- `perf(utils): apply-only filter`
+- `fix(ui): show validation errors`
+- `chore(utils): add parseNumStrict`
+- `feat(ui): add ErrorBoundary`
+
